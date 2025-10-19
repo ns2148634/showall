@@ -10,13 +10,20 @@ const BANK_INFO = {
 
 export default function PaymentPage() {
   const [method, setMethod] = useState<"opay" | "bank">("bank");
-  const [remit, setRemit] = useState({
-    email: "",
-    amount: 100,
-    code: "",
-    time: "",
+  const [remit, setRemit] = useState<{
+    email: string;
+    amount: number;
+    code: string;
+    time: string;
+    receipt: null | File;
+  }>({
+    email: '',
+    amount: 0,
+    code: '',
+    time: '',
     receipt: null,
   });
+
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState("");
