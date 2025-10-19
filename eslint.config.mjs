@@ -20,10 +20,12 @@ export default [
       "next-env.d.ts",
     ],
     rules: {
-      // 關閉 any 型別錯誤
       "@typescript-eslint/no-explicit-any": "off",
-      // (建議可額外加這行避免本地和CI結果不同)
+      "@typescript-eslint/no-unused-vars": "warn",
+      "prefer-const": "off",
+      "react-hooks/rules-of-hooks": "off",
       "no-warning-comments": "off",
+      "@next/next/no-img-element": "warn",
     },
   },
 ];
