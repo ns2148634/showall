@@ -39,7 +39,7 @@ function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
       reader.onload = ev => setPreview(ev.target.result as string);
       reader.readAsDataURL(file);
     }
-  }
+  
   async function handleSubmit(e) {
     e.preventDefault();
     if (!remit.email.match(/.+@.+\..+/)) {

@@ -1,3 +1,3 @@
-export default function PayCardPage() {
-  return <div>支付頁面尚未完成</div>;
+export default function PreviewCardPage() {
+  return <div>預覽頁面尚未完成</div>;
 }
