@@ -10,72 +10,13 @@ const COLORS = [
 ]
 
 export default function UploadCardPage() {
-  const [categories, setCategories] = useState<any[]>([])
-  const [mainCats, setMainCats] = useState<any[]>([])
-  const [subCats, setSubCats] = useState<any[]>([])
-  const [thirdCats, setThirdCats] = useState<any[]>([])
-  const [cities, setCities] = useState<string[]>([])
-  const [areas, setAreas] = useState<string[]>([])
-  const [form, setForm] = useState({
-    email: "",
-    company: "",
-    name: "",
-    category1: "",
-    category2: "",
-    category3: "",
-    citys: "",
-    area: "",
-    line: "",
-    mobile: "",
-    contact_other: "",
-    intro: "",
-    theme_color: COLORS[0],
-    image_url_front: "",
-    image_url_back: ""
-  })
-  const [imgFront, setImgFront] = useState<File|null>(null)
-  const [imgBack, setImgBack] = useState<File|null>(null)
-  const [previewFront, setPreviewFront] = useState<string>("")
-  const [previewBack, setPreviewBack] = useState<string>("")
-  const [msg, setMsg] = useState("")
-  const [loading, setLoading] = useState(false)
-
-  useEffect(() => {
-    async function fetchData() {
-      const { data: cats } = await supabase.from('categories').select('*')
-      setCategories(cats || [])
-      setMainCats((cats || []).filter(row => row.level === 1))
-      const { data: cityObjs } = await supabase.from('cities').select('citys').neq('citys', null)
-      setCities(["全部", ...Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)))])
-    }
-    fetchData()
-  }, [])
-
-  useEffect(() => {
-    if (!form.category1) { setSubCats([]); setForm(f=>({...f,category2:""})); setThirdCats([]); setForm(f=>({...f,category3:""})); return }
-    setSubCats(categories.filter(row => row.level === 2 && row.parent_id==form.category1))
-    setForm(f=>({...f,category2:""})); setThirdCats([]); setForm(f=>({...f,category3:""}))
-  }, [form.category1, categories])
-
-  useEffect(() => {
-    if (!form.category2) { setThirdCats([]); setForm(f=>({...f,category3:""})); return }
-    setThirdCats(categories.filter(row => row.level === 3 && row.parent_id==form.category2))
-    setForm(f=>({...f,category3:""}))
-  }, [form.category2, categories])
-
-  useEffect(() => {
-    async function fetchAreas() {
-      if (form.citys === "" || form.citys === "全部") { setAreas(["全部"]); setForm(f=>({...f,area:"全部"})); return }
-      const { data: ds } = await supabase.from('cities').select('district').eq('citys', form.citys)
-      setAreas(["全部", ...Array.from(new Set(ds?.map(a => a.district).filter(Boolean)))])
-      setForm(f=>({...f,area:"全部"}))
-    }
-    fetchAreas()
-  }, [form.citys])
-
+  // ...前略...
   // 圖片壓縮
-  function handleFileChange(e, type) {
-    const file = e.target.files[0]
+  function handleFileChange(
+    e: React.ChangeEvent<HTMLInputElement>, 
+    type: "front" | "back"
+  ) {
+    const file = e.target.files && e.target.files[0]
     if (!file) return
     // 格式/大小檢查
     const allowed = ["image/jpeg", "image/png", "image/webp"]
@@ -101,7 +42,7 @@ export default function UploadCardPage() {
       let outType = file.type === "image/webp" ? "image/webp"
                   : file.type === "image/png" ? "image/png"
                   : "image/jpeg"
-      let dataUrl = canvas.toDataURL(outType, outType!=="image/png"? 0.8 : 1)
+      let dataUrl = canvas.toDataURL(outType, outType !== "image/png" ? 0.8 : 1)
       if (type === "front") {
         setImgFront(file)
         setPreviewFront(dataUrl)
