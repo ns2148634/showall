@@ -27,10 +27,15 @@ export default function PaymentPage() {
 }
 
 function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files[0];
-    if (file) {
-      setRemit(r => ({ ...r, receipt: file }));
-      const reader = new FileReader();
+  const files = e.target.files;
+  if (files && files[0]) {
+    const file = files[0];
+    setRemit(r => ({ ...r, receipt: file }));
+    const reader = new FileReader();
+    // 後續處理邏輯...
+  }
+}
+
       reader.onload = ev => setPreview(ev.target.result as string);
       reader.readAsDataURL(file);
     }
