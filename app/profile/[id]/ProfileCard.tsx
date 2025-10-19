@@ -2,7 +2,19 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 
-export default function ProfileCard({ data }) {
+// 請根據你的 data 結構補型別（以下為你現有欄位）
+type ProfileCardProps = {
+  data: {
+    imgFront: string;
+    imgBack: string;
+    name: string;
+    category: string;
+    region: string;
+    about: string;
+  };
+};
+
+export default function ProfileCard({ data }: ProfileCardProps) {
   const router = useRouter();
   return (
     <section className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 relative">
