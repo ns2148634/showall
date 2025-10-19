@@ -1,4 +1,4 @@
-"use client"
+// "use client"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
@@ -46,10 +46,9 @@ export default function SearchPage() {
 
   async function fetchCards() {
     setLoading(true)
-    let query = supabase.from('cards').select('*', { count: "exact" }) // 顯示已付費/上架
-      .eq('is_paid', true)
+    let query = supabase.from('cards').select('*', { count: "exact" }).eq('is_paid', true)
     if (keyword.trim()) {
-      query = query.ilike('name', `%${keyword.trim()}%`) // 這可改為查多欄
+      query = query.ilike('name', `%${keyword.trim()}%`)
     }
     if (selectedCity !== "全部") query = query.eq('citys', selectedCity)
     if (selectedArea !== "全部") query = query.eq('area', selectedArea)
@@ -57,7 +56,7 @@ export default function SearchPage() {
     // 排序
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
-    else query = query.order('random()') // 隨機排序預設
+    else query = query.order('random()')
 
     // 分頁
     const from = (page-1)*PAGE_SIZE
@@ -70,7 +69,7 @@ export default function SearchPage() {
   }
 
   // 重新搜尋要還原分頁
-  function doSearch(e) {
+  function doSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPage(1)
     fetchCards()
@@ -78,7 +77,6 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      
       <main className="max-w-3xl mx-auto py-10">
         {/* 搜尋條件 */}
         <form className="flex flex-wrap gap-4 justify-center mb-6" onSubmit={doSearch}>
