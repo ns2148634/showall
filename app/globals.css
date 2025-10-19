@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ========= ABCD/SHOWALL 專屬全域樣式 ============ */
+
+/* 網站基底背景、字型、主要色調 */
+body {
+  background: #f9fafe;
+  color: #222;
+  font-family: 'Noto Sans TC', 'Segoe UI', Arial, sans-serif;
+  letter-spacing: 0.01rem;
+}
+
+/* LOGO 標題整體感（若需全站粗體） */
+h1, h2, h3, h4 {
+  font-family: 'Noto Sans TC', 'Segoe UI', Arial, sans-serif;
+  color: #2563eb;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+/* 卡片式主體陰影、圓角、動態（都靠 Tailwind，但可細部調整） */
+.card {
+  @apply rounded-xl shadow-md bg-white transition hover:shadow-xl;
+}
+
+/* 全站按鈕（標準、Hover 狀態、disabled 狀態） */
+button, .btn {
+  @apply bg-blue-600 text-white rounded-lg px-4 py-2 font-bold transition hover:bg-blue-700 disabled:opacity-70;
+}
+
+/* 超連結強調主要色調 */
+a {
+  color: #2563eb;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+a:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+/* 名片縮圖與圓角 */
+img.card-thumb {
+  border-radius: 0.7em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+
+/* 分隔線與內部間距統一 */
+hr {
+  margin: 2.5rem auto;
+  border: none;
+  border-top: 1px solid #e3e8f0;
+}
+
+/* Placeholder 文字淡藍色 */
+::placeholder {
+  color: #93c5fd;
+  opacity: 1;
+}
+
+/* 小工具元件細節修飾（如搜尋、輸入框、欄位背景） */
+input, select, textarea {
+  border-radius: 0.6em;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  padding-left: 0.5em;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #2563eb;
+  outline: none;
+  background: #fff;
+}
+
