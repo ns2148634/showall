@@ -22,10 +22,11 @@ export default function PaymentPage() {
   const [preview, setPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
-  function handleChange(e) {
-    setRemit(r => ({ ...r, [e.target.name]: e.target.value }));
-  }
-  function handleFile(e) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  setRemit(r => ({ ...r, [e.target.name]: e.target.value }));
+}
+
+function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files[0];
     if (file) {
       setRemit(r => ({ ...r, receipt: file }));
