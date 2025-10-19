@@ -1,6 +1,10 @@
 import ProfileCard from "./ProfileCard";
 
-export default async function Page({ params }) {
+type PageProps = {
+  params: { id: string };
+};
+
+export default async function Page({ params }: PageProps) {
   // 模擬含正反面圖片的資料
   const data = {
     name: "王小明",
