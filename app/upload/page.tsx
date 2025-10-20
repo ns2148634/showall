@@ -1,7 +1,10 @@
 "use client";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
 const COLORS = [
   "#F5F5F5", "#EAF6FF", "#F9F6EF",
   "#FFD700", "#FDC1C5", "#A6E1FA", "#46C2D6",
