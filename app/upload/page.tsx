@@ -152,16 +152,17 @@ export default function UploadCardPage() {
     }
 
     const { error } = await supabase.from('cards').insert([{
-      ...form,
-      image_url_front,
-      image_url_back,
-      created_at: new Date().toISOString()
-      console.log(error);
-    }]);
-    setLoading(false);
+  ...form,
+  image_url_front,
+  image_url_back,
+  created_at: new Date().toISOString(),
+}]);
+console.log(error);
+setLoading(false);
 
-    if (!error) setMsg("上傳成功！");
-    else setMsg("發生錯誤，請稍後再試");
+if (!error) setMsg("上傳成功！");
+else setMsg("發生錯誤，請稍後再試");
+
   }
 
   return (
