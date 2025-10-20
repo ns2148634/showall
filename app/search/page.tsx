@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
+const PAGE_SIZE = 10; // 或你要的分頁大小
 
 export default function SearchPage() {
   const [keyword, setKeyword] = useState("")
@@ -14,7 +15,7 @@ export default function SearchPage() {
   const [total, setTotal] = useState(0)
   const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
-
+ 
   // 載入所有城市/地區選單
   useEffect(() => {
     async function fetchCities() {
