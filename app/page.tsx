@@ -32,7 +32,7 @@ export default function Home() {
 </div>
 
 
-        <h3 className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">隨機推薦名片</h3>
+        <h3 className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">最新推薦名片</h3>
         <RandomCards />
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
