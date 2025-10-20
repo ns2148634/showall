@@ -18,7 +18,6 @@ export default function RandomCards() {
     fetchData()
   }, [])
 
-  if (!cards.length) return <div>載入隨機名片中...</div>
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
