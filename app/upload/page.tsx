@@ -172,8 +172,148 @@ export default function UploadCardPage() {
       <main className="max-w-lg mx-auto py-10">
         <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={handleSubmit}>
           <h2 className="text-xl font-bold text-center text-gray-700 mb-6">名片上傳</h2>
-          {/* ...欄位結構均照原本... */}
-          {/* 輸入、分類、城市、行政區等表單原欄位 */}
+          <div>
+  <label className="font-bold text-gray-600 mb-1 block">電子郵件<span className="text-red-500">*</span></label>
+  <input
+    type="email"
+    className="w-full border rounded px-3 py-2"
+    placeholder="example@mail.com"
+    value={form.email}
+    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+    required
+  />
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">公司 / 組織</label>
+  <input
+    type="text"
+    className="w-full border rounded px-3 py-2"
+    placeholder="公司名稱"
+    value={form.company}
+    onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
+  />
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">姓名 / 暱稱<span className="text-red-500">*</span></label>
+  <input
+    type="text"
+    className="w-full border rounded px-3 py-2"
+    placeholder="姓名"
+    value={form.name}
+    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
+    required
+  />
+</div>
+
+{/* 類別選擇 */}
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">主要類別</label>
+  <select
+    className="w-full border rounded px-3 py-2"
+    value={form.category1}
+    onChange={e => setForm(f => ({ ...f, category1: e.target.value }))}
+  >
+    <option value="">請選擇</option>
+    {mainCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+  </select>
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">細分類別</label>
+  <select
+    className="w-full border rounded px-3 py-2"
+    value={form.category2}
+    onChange={e => setForm(f => ({ ...f, category2: e.target.value }))}
+    disabled={!subCats.length}
+  >
+    <option value="">請選擇</option>
+    {subCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+  </select>
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">細項</label>
+  <select
+    className="w-full border rounded px-3 py-2"
+    value={form.category3}
+    onChange={e => setForm(f => ({ ...f, category3: e.target.value }))}
+    disabled={!thirdCats.length}
+  >
+    <option value="">請選擇</option>
+    {thirdCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+  </select>
+</div>
+
+{/* 城市/區域 */}
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">縣市</label>
+  <select
+    className="w-full border rounded px-3 py-2"
+    value={form.citys}
+    onChange={e => setForm(f => ({ ...f, citys: e.target.value }))}
+  >
+    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+  </select>
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">行政區</label>
+  <select
+    className="w-full border rounded px-3 py-2"
+    value={form.area}
+    onChange={e => setForm(f => ({ ...f, area: e.target.value }))}
+  >
+    {areas.map(a => <option key={a} value={a}>{a}</option>)}
+  </select>
+</div>
+
+{/* 其他聯絡方式 */}
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">Line ID</label>
+  <input
+    type="text"
+    className="w-full border rounded px-3 py-2"
+    placeholder="Line ID"
+    value={form.line}
+    onChange={e => setForm(f => ({ ...f, line: e.target.value }))}
+  />
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">手機</label>
+  <input
+    type="text"
+    className="w-full border rounded px-3 py-2"
+    placeholder="手機號碼"
+    value={form.mobile}
+    onChange={e => setForm(f => ({ ...f, mobile: e.target.value }))}
+  />
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">其他聯絡方式</label>
+  <input
+    type="text"
+    className="w-full border rounded px-3 py-2"
+    placeholder="如Email、社群帳號等"
+    value={form.contact_other}
+    onChange={e => setForm(f => ({ ...f, contact_other: e.target.value }))}
+  />
+</div>
+
+<div>
+  <label className="font-bold text-gray-600 mb-1 block">一句簡介</label>
+  <input
+    type="text"
+    className="w-full border rounded px-3 py-2"
+    placeholder="一句話介紹自己"
+    value={form.intro}
+    onChange={e => setForm(f => ({ ...f, intro: e.target.value }))}
+  />
+</div>
+
           <div>
             <label className="font-bold text-gray-600 mb-1 block">名片正面<span className="text-red-500">*</span></label>
             <div className="text-xs text-gray-500 mb-1">
