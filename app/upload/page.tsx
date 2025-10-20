@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 const COLORS = [
@@ -9,6 +10,7 @@ const COLORS = [
 ];
 
 export default function UploadCardPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
   const [mainCats, setMainCats] = useState<any[]>([]);
   const [subCats, setSubCats] = useState<any[]>([]);
@@ -114,58 +116,37 @@ export default function UploadCardPage() {
     img.src = URL.createObjectURL(file);
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
+  function handlePreview() {
     setMsg("");
     setLoading(true);
 
-    if (!form.email.match(/.+@.+\..+/) || form.email.length > 120) { setMsg("請填正確電子郵件（最多120字）"); setLoading(false); return; }
-    if (form.company.length > 30) { setMsg("公司/組織最多30字"); setLoading(false); return; }
-    if (form.name.length > 20) { setMsg("姓名/暱稱最多20字"); setLoading(false); return; }
-    if (form.line.length > 30) { setMsg("Line最多30字"); setLoading(false); return; }
-    if (form.mobile.length > 30) { setMsg("手機最多30字"); setLoading(false); return; }
-    if (form.contact_other.length > 30) { setMsg("其他聯絡最多30字"); setLoading(false); return; }
-    if (form.intro.length > 30) { setMsg("簡介最多30字"); setLoading(false); return; }
-    if (!imgFront) { setMsg("需上傳名片正面！"); setLoading(false); return; }
-
-    let image_url_front = "";
-    if (imgFront) {
-      const frontPath = `front/${Date.now()}_${imgFront.name}`;
-      const { error: frontError } = await supabase.storage
-        .from('card-images')
-        .upload(frontPath, imgFront);
-      if (frontError) { setMsg("名片正面圖片上傳失敗"); setLoading(false); return; }
-      image_url_front = supabase.storage.from('card-images').getPublicUrl(frontPath).data.publicUrl;
+    // 必填檢查：三層分類
+    if (!form.category1 || !form.category2 || !form.category3) {
+      setMsg("請選擇三層職業分類");
+      setLoading(false);
+      return;
     }
-
-    let image_url_back = "";
-    if (imgBack) {
-      const backPath = `back/${Date.now()}_${imgBack.name}`;
-      const { error: backError } = await supabase.storage
-        .from('card-images')
-        .upload(backPath, imgBack);
-      if (backError) { setMsg("名片背面圖片上傳失敗"); setLoading(false); return; }
-      image_url_back = supabase.storage.from('card-images').getPublicUrl(backPath).data.publicUrl;
+    // 必填檢查：城市/行政區
+    if (!form.citys || !form.area || form.citys === "全部" || form.area === "全部") {
+      setMsg("請選擇所在城市和行政區");
+      setLoading(false);
+      return;
     }
+    // 其它欄位驗證（你可視需要繼續加）
 
-    const { error } = await supabase.from('cards').insert([{
-  ...form,
-  image_url_front,
-  image_url_back,
-  created_at: new Date().toISOString(),
-}]);
-console.log(error);
-setLoading(false);
+    // 將表單暫存到 sessionStorage，預覽頁可直接讀
+    window.sessionStorage.setItem("previewForm", JSON.stringify(form));
+    window.sessionStorage.setItem("previewFront", previewFront);
+    window.sessionStorage.setItem("previewBack", previewBack);
 
-if (!error) setMsg("上傳成功！");
-else setMsg("發生錯誤，請稍後再試");
-
+    // 跳轉至預覽頁
+    router.push("/preview");
   }
 
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-lg mx-auto py-10">
-        <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={handleSubmit}>
+        <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={e => e.preventDefault()}>
           <h2 className="text-xl font-bold text-center text-gray-700 mb-6">名片上傳</h2>
           {/* 電子郵件 */}
           <div>
@@ -198,16 +179,14 @@ else setMsg("發生錯誤，請稍後再試");
             </div>
             <div>
               <label className="mb-1 text-gray-600 font-bold block">次分類</label>
-              <select className="border rounded p-2" value={form.category2} onChange={e => setForm(f => ({ ...f, category2: e.target.value }))}
-                disabled={!form.category1}>
+              <select className="border rounded p-2" value={form.category2} onChange={e => setForm(f => ({ ...f, category2: e.target.value }))} disabled={!form.category1}>
                 <option value="">請選擇</option>
                 {subCats.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
               </select>
             </div>
             <div>
               <label className="mb-1 text-gray-600 font-bold block">細分類</label>
-              <select className="border rounded p-2" value={form.category3} onChange={e => setForm(f => ({ ...f, category3: e.target.value }))}
-                disabled={!form.category2}>
+              <select className="border rounded p-2" value={form.category3} onChange={e => setForm(f => ({ ...f, category3: e.target.value }))} disabled={!form.category2}>
                 <option value="">請選擇</option>
                 {thirdCats.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
               </select>
@@ -228,7 +207,7 @@ else setMsg("發生錯誤，請稍後再試");
               </select>
             </div>
           </div>
-          {/* Line */}
+           {/* Line */}
           <div>
             <label className="font-bold text-gray-600 mb-1 block">Line (限30字)</label>
             <input type="text" className="border p-2 rounded w-full" value={form.line} maxLength={30}
@@ -272,12 +251,14 @@ else setMsg("發生錯誤，請稍後再試");
               onChange={e => handleFileChange(e, "back")} />
             {previewBack && <img src={previewBack} alt="背面預覽" className="mt-1 rounded w-32 h-32 object-cover" />}
           </div>
+          {/* 預覽按鈕 */}
           <button
-            type="submit"
+            type="button"
             disabled={loading}
             className="w-full py-3 mt-6 rounded bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition"
+            onClick={handlePreview}
           >
-            {loading ? "上傳中..." : "上傳預覽"}
+            名片預覽
           </button>
           {msg && <div className={`mt-3 text-center font-bold ${msg.includes('成功') ? "text-green-600" : "text-red-500"}`}>{msg}</div>}
         </form>
