@@ -1,3 +1,7 @@
+// 例如：/app/profile/[id]/page.tsx
+export const runtime = 'edge';
+
+// ...原本內容...
 import ProfileCard from "./ProfileCard";
 
 type PageProps = {
