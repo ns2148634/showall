@@ -3,9 +3,6 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
 
-const LOGO_URL = "/showall logo.png"
-const PAGE_SIZE = 10
-
 export default function SearchPage() {
   const [keyword, setKeyword] = useState("")
   const [cities, setCities] = useState<string[]>([])
