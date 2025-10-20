@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-const LOGO_URL = "/showall logo.png";
 const COLORS = [
   "#F5F5F5", "#EAF6FF", "#F9F6EF",
   "#FFD700", "#FDC1C5", "#A6E1FA", "#46C2D6",
@@ -73,7 +72,6 @@ export default function UploadCardPage() {
     fetchAreas();
   }, [form.citys]);
 
-  // 圖片壓縮與類型檢查(型別安全)
   function handleFileChange(
     e: React.ChangeEvent<HTMLInputElement>,
     type: "front" | "back"
@@ -116,13 +114,11 @@ export default function UploadCardPage() {
     img.src = URL.createObjectURL(file);
   }
 
-  // 分段：圖片先上傳storage，再寫table
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setMsg("");
     setLoading(true);
 
-    // 驗證資料
     if (!form.email.match(/.+@.+\..+/) || form.email.length > 120) { setMsg("請填正確電子郵件（最多120字）"); setLoading(false); return; }
     if (form.company.length > 30) { setMsg("公司/組織最多30字"); setLoading(false); return; }
     if (form.name.length > 20) { setMsg("姓名/暱稱最多20字"); setLoading(false); return; }
@@ -132,7 +128,6 @@ export default function UploadCardPage() {
     if (form.intro.length > 30) { setMsg("簡介最多30字"); setLoading(false); return; }
     if (!imgFront) { setMsg("需上傳名片正面！"); setLoading(false); return; }
 
-    // 1. 上傳正面圖片
     let image_url_front = "";
     if (imgFront) {
       const frontPath = `front/${Date.now()}_${imgFront.name}`;
@@ -143,7 +138,6 @@ export default function UploadCardPage() {
       image_url_front = supabase.storage.from('card-images').getPublicUrl(frontPath).data.publicUrl;
     }
 
-    // 2. 上傳背面圖片（如有）
     let image_url_back = "";
     if (imgBack) {
       const backPath = `back/${Date.now()}_${imgBack.name}`;
@@ -154,7 +148,6 @@ export default function UploadCardPage() {
       image_url_back = supabase.storage.from('card-images').getPublicUrl(backPath).data.publicUrl;
     }
 
-    // 3. 寫入 cards table
     const { error } = await supabase.from('cards').insert([{
       ...form,
       image_url_front,
@@ -172,148 +165,92 @@ export default function UploadCardPage() {
       <main className="max-w-lg mx-auto py-10">
         <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={handleSubmit}>
           <h2 className="text-xl font-bold text-center text-gray-700 mb-6">名片上傳</h2>
+          {/* 電子郵件 */}
           <div>
-  <label className="font-bold text-gray-600 mb-1 block">電子郵件<span className="text-red-500">*</span></label>
-  <input
-    type="email"
-    className="w-full border rounded px-3 py-2"
-    placeholder="example@mail.com"
-    value={form.email}
-    onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-    required
-  />
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">公司 / 組織</label>
-  <input
-    type="text"
-    className="w-full border rounded px-3 py-2"
-    placeholder="公司名稱"
-    value={form.company}
-    onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-  />
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">姓名 / 暱稱<span className="text-red-500">*</span></label>
-  <input
-    type="text"
-    className="w-full border rounded px-3 py-2"
-    placeholder="姓名"
-    value={form.name}
-    onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-    required
-  />
-</div>
-
-{/* 類別選擇 */}
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">主要類別</label>
-  <select
-    className="w-full border rounded px-3 py-2"
-    value={form.category1}
-    onChange={e => setForm(f => ({ ...f, category1: e.target.value }))}
-  >
-    <option value="">請選擇</option>
-    {mainCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-  </select>
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">細分類別</label>
-  <select
-    className="w-full border rounded px-3 py-2"
-    value={form.category2}
-    onChange={e => setForm(f => ({ ...f, category2: e.target.value }))}
-    disabled={!subCats.length}
-  >
-    <option value="">請選擇</option>
-    {subCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-  </select>
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">細項</label>
-  <select
-    className="w-full border rounded px-3 py-2"
-    value={form.category3}
-    onChange={e => setForm(f => ({ ...f, category3: e.target.value }))}
-    disabled={!thirdCats.length}
-  >
-    <option value="">請選擇</option>
-    {thirdCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-  </select>
-</div>
-
-{/* 城市/區域 */}
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">縣市</label>
-  <select
-    className="w-full border rounded px-3 py-2"
-    value={form.citys}
-    onChange={e => setForm(f => ({ ...f, citys: e.target.value }))}
-  >
-    {cities.map(c => <option key={c} value={c}>{c}</option>)}
-  </select>
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">行政區</label>
-  <select
-    className="w-full border rounded px-3 py-2"
-    value={form.area}
-    onChange={e => setForm(f => ({ ...f, area: e.target.value }))}
-  >
-    {areas.map(a => <option key={a} value={a}>{a}</option>)}
-  </select>
-</div>
-
-{/* 其他聯絡方式 */}
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">Line ID</label>
-  <input
-    type="text"
-    className="w-full border rounded px-3 py-2"
-    placeholder="Line ID"
-    value={form.line}
-    onChange={e => setForm(f => ({ ...f, line: e.target.value }))}
-  />
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">手機</label>
-  <input
-    type="text"
-    className="w-full border rounded px-3 py-2"
-    placeholder="手機號碼"
-    value={form.mobile}
-    onChange={e => setForm(f => ({ ...f, mobile: e.target.value }))}
-  />
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">其他聯絡方式</label>
-  <input
-    type="text"
-    className="w-full border rounded px-3 py-2"
-    placeholder="如Email、社群帳號等"
-    value={form.contact_other}
-    onChange={e => setForm(f => ({ ...f, contact_other: e.target.value }))}
-  />
-</div>
-
-<div>
-  <label className="font-bold text-gray-600 mb-1 block">一句簡介</label>
-  <input
-    type="text"
-    className="w-full border rounded px-3 py-2"
-    placeholder="一句話介紹自己"
-    value={form.intro}
-    onChange={e => setForm(f => ({ ...f, intro: e.target.value }))}
-  />
-</div>
-
+            <label className="font-bold text-gray-600 mb-1 block">
+              電子郵件<span className="text-red-500">*</span> (限120字)
+            </label>
+            <input type="email" className="border p-2 rounded w-full" required value={form.email} maxLength={120}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+          </div>
+          {/* 公司名稱 */}
+          <div>
+            <label className="font-bold text-gray-600 mb-1 block">公司名稱／組織名稱 (限30字)</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.company} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, company: e.target.value }))} />
+          </div>
+          {/* 姓名 */}
+          <div>
+            <label className="font-bold text-gray-600 mb-1 block">姓名／暱稱 (限20字)</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.name} maxLength={20}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+          </div>
+          {/* 三層分類 */}
+          <div className="flex flex-wrap gap-4">
+            <div>
+              <label className="mb-1 text-gray-600 font-bold block">職業主分類</label>
+              <select className="border rounded p-2" value={form.category1} onChange={e => setForm(f => ({ ...f, category1: e.target.value }))}>
+                <option value="">請選擇</option>
+                {mainCats.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 text-gray-600 font-bold block">次分類</label>
+              <select className="border rounded p-2" value={form.category2} onChange={e => setForm(f => ({ ...f, category2: e.target.value }))}
+                disabled={!form.category1}>
+                <option value="">請選擇</option>
+                {subCats.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 text-gray-600 font-bold block">細分類</label>
+              <select className="border rounded p-2" value={form.category3} onChange={e => setForm(f => ({ ...f, category3: e.target.value }))}
+                disabled={!form.category2}>
+                <option value="">請選擇</option>
+                {thirdCats.map(opt => <option key={opt.id} value={opt.id}>{opt.name}</option>)}
+              </select>
+            </div>
+          </div>
+          {/* 城市/行政區 */}
+          <div className="flex flex-wrap gap-4">
+            <div>
+              <label className="mb-1 text-gray-600 font-bold block">所在城市</label>
+              <select className="border rounded p-2" value={form.citys} onChange={e => setForm(f => ({ ...f, citys: e.target.value }))}>
+                {cities.map(city => <option key={city}>{city}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="mb-1 text-gray-600 font-bold block">行政區</label>
+              <select className="border rounded p-2" value={form.area} onChange={e => setForm(f => ({ ...f, area: e.target.value }))}>
+                {areas.map(area => <option key={area}>{area}</option>)}
+              </select>
+            </div>
+          </div>
+          {/* Line */}
+          <div>
+            <label className="font-bold text-gray-600 mb-1 block">Line (限30字)</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.line} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, line: e.target.value }))} />
+          </div>
+          {/* 手機 */}
+          <div>
+            <label className="font-bold text-gray-600 mb-1 block">手機 (限30字)</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.mobile} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, mobile: e.target.value }))} />
+          </div>
+          {/* 其他聯絡 */}
+          <div>
+            <label className="font-bold text-gray-600 mb-1 block">其他連絡方式 (限30字)</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.contact_other} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, contact_other: e.target.value }))} />
+          </div>
+          {/* 自我簡介 */}
+          <div>
+            <label className="font-bold text-gray-600 mb-1 block">自我簡介（限30字）</label>
+            <input type="text" maxLength={30} className="border p-2 rounded w-full" value={form.intro}
+              onChange={e => setForm(f => ({ ...f, intro: e.target.value }))} />
+          </div>
+          {/* 名片正面 */}
           <div>
             <label className="font-bold text-gray-600 mb-1 block">名片正面<span className="text-red-500">*</span></label>
             <div className="text-xs text-gray-500 mb-1">
@@ -323,6 +260,7 @@ export default function UploadCardPage() {
               required onChange={e => handleFileChange(e, "front")} />
             {previewFront && <img src={previewFront} alt="正面預覽" className="mt-1 rounded w-32 h-32 object-cover" />}
           </div>
+          {/* 名片背面 */}
           <div>
             <label className="font-bold text-gray-600 mb-1 block">名片背面</label>
             <div className="text-xs text-gray-500 mb-1">
@@ -332,7 +270,6 @@ export default function UploadCardPage() {
               onChange={e => handleFileChange(e, "back")} />
             {previewBack && <img src={previewBack} alt="背面預覽" className="mt-1 rounded w-32 h-32 object-cover" />}
           </div>
-          {/* ...其它欄位同原本... */}
           <button
             type="submit"
             disabled={loading}
