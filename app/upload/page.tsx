@@ -156,6 +156,7 @@ export default function UploadCardPage() {
       image_url_front,
       image_url_back,
       created_at: new Date().toISOString()
+      console.log(error);
     }]);
     setLoading(false);
 
