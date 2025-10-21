@@ -20,7 +20,7 @@ export default function PreviewPage() {
     setCategories(JSON.parse(window.sessionStorage.getItem("categories") || "[]"));
   }, []);
 
-  function getCatName(id) {
+function getCatName(id: any) {
     if (!id) return "";
     return categories.find(cat => String(cat.id) === String(id))?.name || id;
   }
