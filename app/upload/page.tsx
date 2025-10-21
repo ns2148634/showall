@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
-const COLORS = [
-  "#F5F5F5", "#EAF6FF", "#F9F6EF",
-  "#FFD700", "#FDC1C5", "#A6E1FA", "#46C2D6",
-  "#1A2636", "#3C4251", "#212121"
+// 背景色選擇設定 (白、淺藍、淺黃、淺綠)
+const BG_COLORS = [
+  { color: "#FFFFFF", name: "白" },
+  { color: "#EAF6FF", name: "淺藍" },
+  { color: "#FFFBE0", name: "淺黃" },
+  { color: "#EBFAE0", name: "淺綠" }
 ];
 
 export default function UploadCardPage() {
@@ -30,7 +32,7 @@ export default function UploadCardPage() {
     mobile: "",
     contact_other: "",
     intro: "",
-    theme_color: COLORS[0],
+    theme_color: BG_COLORS[0].color,
     image_url_front: "",
     image_url_back: ""
   });
@@ -116,33 +118,32 @@ export default function UploadCardPage() {
     img.src = URL.createObjectURL(file);
   }
 
- function handlePreview() {
-  setMsg("");
-  setLoading(true);
+  function handlePreview() {
+    setMsg("");
+    setLoading(true);
 
-  // 必填檢查：三層分類
-  if (!form.category1 || !form.category2 || !form.category3) {
-    setMsg("請選擇三層職業分類");
-    setLoading(false);
-    return;
+    // 必填檢查：三層分類
+    if (!form.category1 || !form.category2 || !form.category3) {
+      setMsg("請選擇三層職業分類");
+      setLoading(false);
+      return;
+    }
+    // 必填檢查：城市/行政區
+    if (!form.citys || !form.area || form.citys === "全部" || form.area === "全部") {
+      setMsg("請選擇所在城市和行政區");
+      setLoading(false);
+      return;
+    }
+    // 其它欄位驗證（你可視需要繼續加）
+
+    // 將所有表單資料 & 類別集合暫存到 sessionStorage，預覽頁可直接讀
+    window.sessionStorage.setItem("previewForm", JSON.stringify(form));
+    window.sessionStorage.setItem("previewFront", previewFront);
+    window.sessionStorage.setItem("previewBack", previewBack);
+    window.sessionStorage.setItem("categories", JSON.stringify(categories));
+
+    router.push("/preview");
   }
-  // 必填檢查：城市/行政區
-  if (!form.citys || !form.area || form.citys === "全部" || form.area === "全部") {
-    setMsg("請選擇所在城市和行政區");
-    setLoading(false);
-    return;
-  }
-
-  // 將所有表單資料 & 類別集合暫存到 sessionStorage，預覽頁可直接讀
-  window.sessionStorage.setItem("previewForm", JSON.stringify(form));
-  window.sessionStorage.setItem("previewFront", previewFront);
-  window.sessionStorage.setItem("previewBack", previewBack);
-  window.sessionStorage.setItem("categories", JSON.stringify(categories)); // ←這行是關鍵！
-
-  // 跳轉至預覽頁
-  router.push("/preview");
-}
-
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -168,6 +169,22 @@ export default function UploadCardPage() {
             <label className="font-bold text-gray-600 mb-1 block">姓名／暱稱 (限20字)</label>
             <input type="text" className="border p-2 rounded w-full" value={form.name} maxLength={20}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+          </div>
+          {/* --背景色選擇-- */}
+          <div>
+            <label className="font-bold text-gray-600 mb-2 block">名片預覽背景色</label>
+            <div className="flex gap-4 mb-2">
+              {BG_COLORS.map(opt => (
+                <button
+                  key={opt.color}
+                  className={`w-10 h-10 rounded-full border-4 cursor-pointer transition ${form.theme_color === opt.color ? "border-blue-600" : "border-gray-200"}`}
+                  style={{ background: opt.color }}
+                  type="button"
+                  aria-label={opt.name}
+                  onClick={() => setForm(f => ({ ...f, theme_color: opt.color }))}
+                />
+              ))}
+            </div>
           </div>
           {/* 三層分類 */}
           <div className="flex flex-wrap gap-4">
