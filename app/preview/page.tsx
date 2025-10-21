@@ -39,12 +39,17 @@ export default function PreviewPage() {
       image_url_back = supabase.storage.from('card-images').getPublicUrl(fname).data.publicUrl;
     }
     // 上傳卡片資料
-    const { error, data } = await supabase.from("cards").insert([{
-      ...form,
-      image_url_front,
-      image_url_back,
-      created_at: new Date().toISOString()
-    ]]).select().single();
+    const { error, data } = await supabase
+  .from("cards")
+  .insert([{
+    ...form,
+    image_url_front,
+    image_url_back,
+    created_at: new Date().toISOString()
+  }])
+  .select()
+  .single();
+
     setLoading(false);
     if (error) {
       setMsg("資料上架失敗: " + error.message);
