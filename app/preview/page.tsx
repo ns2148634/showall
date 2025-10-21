@@ -68,7 +68,8 @@ export default function PreviewPage() {
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8">
       <h2 className="text-3xl font-bold mb-6 text-blue-800 tracking-wider">名片預覽</h2>
-      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md mx-auto border border-gray-200">
+      <div className="bg-white rounded-lg shadow-2xl p-8 w-full max-w-md mx-auto border border-gray-200"
+  style={{ background: form.theme_color || "#fff" }}>
         <div className="mb-2 text-lg"><strong>姓名：</strong>{form.name}</div>
         <div className="mb-2 text-lg"><strong>公司：</strong>{form.company}</div>
         <div className="mb-2 text-lg"><strong>Email：</strong>{form.email}</div>
