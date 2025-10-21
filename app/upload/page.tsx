@@ -170,22 +170,7 @@ export default function UploadCardPage() {
             <input type="text" className="border p-2 rounded w-full" value={form.name} maxLength={20}
               onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
           </div>
-          {/* --背景色選擇-- */}
-          <div>
-            <label className="font-bold text-gray-600 mb-2 block">名片預覽背景色</label>
-            <div className="flex gap-4 mb-2">
-              {BG_COLORS.map(opt => (
-                <button
-                  key={opt.color}
-                  className={`w-10 h-10 rounded-full border-4 cursor-pointer transition ${form.theme_color === opt.color ? "border-blue-600" : "border-gray-200"}`}
-                  style={{ background: opt.color }}
-                  type="button"
-                  aria-label={opt.name}
-                  onClick={() => setForm(f => ({ ...f, theme_color: opt.color }))}
-                />
-              ))}
-            </div>
-          </div>
+         
           {/* 三層分類 */}
           <div className="flex flex-wrap gap-4">
             <div>
@@ -231,9 +216,9 @@ export default function UploadCardPage() {
             <input type="text" className="border p-2 rounded w-full" value={form.line} maxLength={30}
               onChange={e => setForm(f => ({ ...f, line: e.target.value }))} />
           </div>
-          {/* 手機 */}
+          {/* 行動電話 */}
           <div>
-            <label className="font-bold text-gray-600 mb-1 block">手機 (限30字)</label>
+            <label className="font-bold text-gray-600 mb-1 block">行動電話 (限30字)</label>
             <input type="text" className="border p-2 rounded w-full" value={form.mobile} maxLength={30}
               onChange={e => setForm(f => ({ ...f, mobile: e.target.value }))} />
           </div>
@@ -268,6 +253,22 @@ export default function UploadCardPage() {
             <input type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
               onChange={e => handleFileChange(e, "back")} />
             {previewBack && <img src={previewBack} alt="背面預覽" className="mt-1 rounded w-32 h-32 object-cover" />}
+          </div>
+           {/* --背景色選擇-- */}
+          <div>
+            <label className="font-bold text-gray-600 mb-2 block">名片預覽背景色</label>
+            <div className="flex gap-4 mb-2">
+              {BG_COLORS.map(opt => (
+                <button
+                  key={opt.color}
+                  className={`w-10 h-10 rounded-full border-4 cursor-pointer transition ${form.theme_color === opt.color ? "border-blue-600" : "border-gray-200"}`}
+                  style={{ background: opt.color }}
+                  type="button"
+                  aria-label={opt.name}
+                  onClick={() => setForm(f => ({ ...f, theme_color: opt.color }))}
+                />
+              ))}
+            </div>
           </div>
           {/* 預覽按鈕 */}
           <button
