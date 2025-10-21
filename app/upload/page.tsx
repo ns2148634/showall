@@ -116,32 +116,33 @@ export default function UploadCardPage() {
     img.src = URL.createObjectURL(file);
   }
 
-  function handlePreview() {
-    setMsg("");
-    setLoading(true);
+ function handlePreview() {
+  setMsg("");
+  setLoading(true);
 
-    // 必填檢查：三層分類
-    if (!form.category1 || !form.category2 || !form.category3) {
-      setMsg("請選擇三層職業分類");
-      setLoading(false);
-      return;
-    }
-    // 必填檢查：城市/行政區
-    if (!form.citys || !form.area || form.citys === "全部" || form.area === "全部") {
-      setMsg("請選擇所在城市和行政區");
-      setLoading(false);
-      return;
-    }
-    // 其它欄位驗證（你可視需要繼續加）
-
-    // 將表單暫存到 sessionStorage，預覽頁可直接讀
-    window.sessionStorage.setItem("previewForm", JSON.stringify(form));
-    window.sessionStorage.setItem("previewFront", previewFront);
-    window.sessionStorage.setItem("previewBack", previewBack);
-
-    // 跳轉至預覽頁
-    router.push("/preview");
+  // 必填檢查：三層分類
+  if (!form.category1 || !form.category2 || !form.category3) {
+    setMsg("請選擇三層職業分類");
+    setLoading(false);
+    return;
   }
+  // 必填檢查：城市/行政區
+  if (!form.citys || !form.area || form.citys === "全部" || form.area === "全部") {
+    setMsg("請選擇所在城市和行政區");
+    setLoading(false);
+    return;
+  }
+
+  // 將所有表單資料 & 類別集合暫存到 sessionStorage，預覽頁可直接讀
+  window.sessionStorage.setItem("previewForm", JSON.stringify(form));
+  window.sessionStorage.setItem("previewFront", previewFront);
+  window.sessionStorage.setItem("previewBack", previewBack);
+  window.sessionStorage.setItem("categories", JSON.stringify(categories)); // ←這行是關鍵！
+
+  // 跳轉至預覽頁
+  router.push("/preview");
+}
+
 
   return (
     <div className="min-h-screen bg-gray-100">
