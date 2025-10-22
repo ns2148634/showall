@@ -93,14 +93,13 @@ export default function PaymentPage() {
         body: JSON.stringify({
           to: "service@showall.tw",
           subject: "新的匯款資料已提交",
-          html: `
-            <div>會員匯款通知如下：</div>
-            <div>Email: ${remit.email}</div>
-            <div>金額: 100 元</div>
-            <div>後五碼: ${remit.code}</div>
-            <div>時間: ${remit.time}</div>
-            ${receipt_url ? `<div>憑證: <a href="${receipt_url}" target="_blank">查看圖片</a></div>` : ""}
-          `
+         html: `
+  <div>匯款通知如下：</div>
+  <div>Email: ${remit.email}</div>
+  <div>金額: ${remit.amount}</div>
+  ${receipt_url ? `<div>憑證: <a href="${receipt_url}">查看圖片</a></div>` : ""}
+`,
+
           await fetch("/api/sendMail", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
