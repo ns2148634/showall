@@ -56,6 +56,17 @@ export default function UploadCardPage() {
     }
     fetchData();
   }, []);
+useEffect(() => {
+  // 還原 preview 跳回來的資料
+  const savedForm = JSON.parse(window.sessionStorage.getItem("previewForm") || "{}");
+  if (Object.keys(savedForm).length > 0) setForm(savedForm);
+  const previewFrontImg = window.sessionStorage.getItem("previewFront") || "";
+  if (previewFrontImg) setPreviewFront(previewFrontImg);
+  const previewBackImg = window.sessionStorage.getItem("previewBack") || "";
+  if (previewBackImg) setPreviewBack(previewBackImg);
+  // 若有分類資料、其它暫存也可同時處理
+  // window.sessionStorage.getItem("categories")...
+}, []);
 
   useEffect(() => {
     if (!form.category1) { setSubCats([]); setForm(f => ({ ...f, category2: "" })); setThirdCats([]); setForm(f => ({ ...f, category3: "" })); return; }
