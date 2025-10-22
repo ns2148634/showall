@@ -80,30 +80,30 @@ export default function Home() {
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
           {cards.length > 0 ? (
             cards.map((card) => (
-              <Link
-                href={`/card/${card.url_slug}`}
-                key={card.id}
-                className="block"
-              >
-                <div className="p-2 bg-white rounded shadow hover:shadow-lg text-center transition">
-                  <Image
-                    src={card.image_url_front}
-                    alt={card.name}
-                    width={150}
-                    height={90}
-                    className="mx-auto rounded"
-                  />
-                  <div className="mt-2 font-medium">{card.name}</div>
-                  <div className="text-xs text-gray-500">{card.company}</div>
-                </div>
-              </Link>
-            ))
-          ) : (
-            <div className="col-span-3 text-center text-gray-400">
-              暫無資料
-            </div>
-          )}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
+  {cards.length > 0 ? (
+    cards.map((card) => (
+      <Link href={`/card/${card.url_slug}`} key={card.id} className="block">
+        <div className="p-2 bg-white rounded shadow hover:shadow-lg text-center transition">
+          {/* 只顯示名片正面圖片 */}
+          <Image
+            src={card.image_url_front}
+            alt="名片正面"
+            width={150}
+            height={90}
+            className="mx-auto rounded"
+            style={{ objectFit: "contain", background: "#fff" }}
+          />
         </div>
+      </Link>
+    ))
+  ) : (
+    <div className="col-span-3 text-center text-gray-400">
+      暫無資料
+    </div>
+  )}
+</div>
+
       </main>
 
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
