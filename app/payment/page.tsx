@@ -18,7 +18,7 @@ export default function PaymentPage() {
     receipt: null | File;
   }>({
     email: '',
-    amount: 0,
+    amount: 100, // 預設設為100元
     code: '',
     time: '',
     receipt: null,
@@ -73,7 +73,7 @@ export default function PaymentPage() {
     const { error } = await supabase.from("payments").insert([
       {
         email: remit.email,
-        amount: remit.amount,
+        amount: 100, // 這裡寫死100元
         method: "bank",
         code: remit.code,
         time: remit.time,
@@ -86,6 +86,39 @@ export default function PaymentPage() {
     if (!error) {
       setSubmitted(true);
       setMsg("匯款資料已提交！請靜待 1-2 個工作日審核。");
+      // ======== Email 通知給站長 =========
+      await fetch("/api/sendMail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: "service@showall.tw",
+          subject: "新的匯款資料已提交",
+          html: `
+            <div>會員匯款通知如下：</div>
+            <div>Email: ${remit.email}</div>
+            <div>金額: 100 元</div>
+            <div>後五碼: ${remit.code}</div>
+            <div>時間: ${remit.time}</div>
+            ${receipt_url ? `<div>憑證: <a href="${receipt_url}" target="_blank">查看圖片</a></div>` : ""}
+          `
+          await fetch("/api/sendMail", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    to: remit.email, // 用戶信箱
+    subject: "匯款資料已收到，請靜待審核",
+    html: `
+      <div>親愛會員您好：</div>
+      <div>我們已收到您的匯款資料（金額100元），請靜待1-2個工作日審核。</div>
+      <div>有問題請隨時回覆此信或聯絡客服。</div>
+    `,
+    replyTo: "service@showall.tw" // 可在 sendMail API 支援 reply-to 標頭
+  })
+});
+
+        })
+      });
+      // ===================================
     } else {
       setMsg("發生錯誤，請重試或聯絡客服");
     }
@@ -144,8 +177,7 @@ export default function PaymentPage() {
                 name="amount"
                 className="border rounded px-3 py-2 w-full"
                 type="number"
-                min={100}
-                value={remit.amount}
+                value={100}
                 disabled
               />
             </div>
