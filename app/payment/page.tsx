@@ -176,7 +176,7 @@ export default function PaymentPage() {
                 name="amount"
                 className="border rounded px-3 py-2 w-full"
                 type="number"
-                value={100}
+                value={remit.amount}
                 disabled
               />
             </div>
