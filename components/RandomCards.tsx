@@ -8,11 +8,12 @@ export default function RandomCards() {
 
   useEffect(() => {
     async function fetchData() {
-      const { data, error } = await supabase
-        .from('cards')
-        .select('id, name, job, company, image_url_front, url_slug')
-        .order('random()')
-        .limit(6)
+     const { data, error } = await supabase
+  .from('cards')
+  .select('id, name, job, company, image_url_front, url_slug')
+  .eq('published', true)         // ← 加這行只抓已上架名片
+  .order('random()')
+  .limit(6)
       setCards(data || [])
     }
     fetchData()
