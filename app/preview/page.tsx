@@ -51,7 +51,10 @@ export default function PreviewPage() {
       if (backError) { setMsg("背面圖片上傳失敗"); setLoading(false); return; }
       image_url_back = supabase.storage.from('card-images').getPublicUrl(fname).data.publicUrl;
     }
-
+  // ===== 新增這三行：從 ID 找名稱 =====
+  const category_main = getCatName(categories, form.category1);
+  const category_sub = getCatName(categories, form.category2);
+  const category_detail = getCatName(categories, form.category3);
     // 產生專屬網址
     const url_slug = genSlug(form.name);
 
