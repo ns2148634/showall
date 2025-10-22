@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 // /app/api/sendMail/route.ts
 import nodemailer from "nodemailer";
 
@@ -10,7 +12,7 @@ export async function POST(req) {
     secure: true,
     auth: {
       user: "service@showall.tw",
-      pass: "zhZ40gU7m3"
+      pass: process.env.MAIL_PASS, // 改用環境變數更安全
     }
   });
 
