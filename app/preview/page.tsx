@@ -35,6 +35,7 @@ export default function PreviewPage() {
     setMsg(""); setLoading(true);
     let image_url_front = form.image_url_front;
     let image_url_back = form.image_url_back;
+if (error) console.error("insert failed:", error.message);
 
     // 處理圖片上傳
     if (previewFront && !image_url_front) {
