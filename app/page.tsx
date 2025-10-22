@@ -33,12 +33,13 @@ export default function Home() {
 
 
         <h3 className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">最新推薦名片</h3>
-       await supabase
+       const { data, error } = await supabase
   .from('cards')
   .select('id, name, company, image_url_front, url_slug')
   .eq('published', true)
   .order('created_at', { ascending: false })
   .limit(10);
+
 
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
