@@ -8,17 +8,17 @@ export default function RandomCards() {
 
   useEffect(() => {
     async function fetchData() {
-     const { data, error } = await supabase
+    const { data, error } = await supabase
   .from('cards')
   .select('id, name, job, company, image_url_front, url_slug')
-  .eq('published', true)         // ← 加這行只抓已上架名片
-  .order('random()')
-  .limit(6)
-      setCards(data || [])
+  .eq('published', true)
+  .order('created_at', { ascending: false }) // 由新到舊
+  .limit(10);
+
+setCards(data || []);
     }
     fetchData()
   }, [])
-
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
