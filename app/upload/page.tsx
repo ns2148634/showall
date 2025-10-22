@@ -8,7 +8,10 @@ const BG_COLORS = [
   { color: "#FFFFFF", name: "白" },
   { color: "#EAF6FF", name: "淺藍" },
   { color: "#FFFBE0", name: "淺黃" },
-  { color: "#EBFAE0", name: "淺綠" }
+  { color: "#EBFAE0", name: "淺綠" },
+  { color: "#FFE5E5", name: "淺紅" },    // 新增
+  { color: "#F4F4F5", name: "淺灰" },    // 新增
+  { color: "#F3E8FF", name: "淺紫" }     // 新增
 ];
 
 export default function UploadCardPage() {
