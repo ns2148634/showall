@@ -126,7 +126,7 @@ export default function PaymentPage() {
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg p-8 flex flex-col gap-5">
-        <h2 className="text-2xl font-bold text-blue-800 text-center mb-2">讓更多人找到你，一年只要 100 元！</h2>
+        <h2 className="text-2xl font-bold text-blue-800 text-center mb-2">讓更多人找到你，上架一年只要 100 元！</h2>
         <div className="flex gap-3 justify-center mb-3">
           <button
             className={`py-2 px-6 rounded-lg font-bold border ${method === "opay" ? "bg-blue-300 border-blue-500 text-white" : "bg-gray-200 border-gray-400 text-gray-700"}`}
