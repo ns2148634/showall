@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 // 產生唯一 url_slug（建議寫法）
-function genSlug(name) {
+function genSlug(name: string): string {
   return encodeURIComponent(
     (name || "user") + "-" + Math.floor(Math.random() * 10000000)
   );
@@ -23,59 +23,93 @@ export default function PreviewPage() {
     setForm(JSON.parse(window.sessionStorage.getItem("previewForm") || "{}"));
     setPreviewFront(window.sessionStorage.getItem("previewFront") || "");
     setPreviewBack(window.sessionStorage.getItem("previewBack") || "");
-    setCategories(JSON.parse(window.sessionStorage.getItem("categories") || "[]"));
+    setCategories(
+      JSON.parse(window.sessionStorage.getItem("categories") || "[]")
+    );
   }, []);
 
   function getCatName(id: any) {
     if (!id) return "";
-    return categories.find(cat => String(cat.id) === String(id))?.name || id;
+    return (
+      categories.find((cat) => String(cat.id) === String(id))?.name || id
+    );
   }
 
   async function handlePublish() {
-    setMsg(""); setLoading(true);
+    setMsg("");
+    setLoading(true);
     let image_url_front = form.image_url_front;
     let image_url_back = form.image_url_back;
-if (error) console.error("insert failed:", error.message);
 
-    // 處理圖片上傳
+    // -------- 圖片上傳 --------
     if (previewFront && !image_url_front) {
       const front_blob = await (await fetch(previewFront)).blob();
       const fname = `front/${Date.now()}.jpg`;
-      const { error: frontError } = await supabase.storage.from('card-images').upload(fname, front_blob, { upsert: true });
-      if (frontError) { setMsg("正面圖片上傳失敗"); setLoading(false); return; }
-      image_url_front = supabase.storage.from('card-images').getPublicUrl(fname).data.publicUrl;
+      const { error: frontError } = await supabase.storage
+        .from("card-images")
+        .upload(fname, front_blob, { upsert: true });
+      if (frontError) {
+        setMsg("正面圖片上傳失敗");
+        setLoading(false);
+        return;
+      }
+      image_url_front = supabase.storage
+        .from("card-images")
+        .getPublicUrl(fname).data.publicUrl;
     }
+
     if (previewBack && !image_url_back) {
       const back_blob = await (await fetch(previewBack)).blob();
       const fname = `back/${Date.now()}.jpg`;
-      const { error: backError } = await supabase.storage.from('card-images').upload(fname, back_blob, { upsert: true });
-      if (backError) { setMsg("背面圖片上傳失敗"); setLoading(false); return; }
-      image_url_back = supabase.storage.from('card-images').getPublicUrl(fname).data.publicUrl;
+      const { error: backError } = await supabase.storage
+        .from("card-images")
+        .upload(fname, back_blob, { upsert: true });
+      if (backError) {
+        setMsg("背面圖片上傳失敗");
+        setLoading(false);
+        return;
+      }
+      image_url_back = supabase.storage
+        .from("card-images")
+        .getPublicUrl(fname).data.publicUrl;
     }
-  // ===== 新增這三行：從 ID 找名稱 =====
-  const category_main = getCatName(categories, form.category1);
-  const category_sub = getCatName(categories, form.category2);
-  const category_detail = getCatName(categories, form.category3);
+
+    // ===== 新增這三行：從 ID 找名稱 =====
+    const category_main = getCatName(form.category1);
+    const category_sub = getCatName(form.category2);
+    const category_detail = getCatName(form.category3);
+
     // 產生專屬網址
     const url_slug = genSlug(form.name);
 
-    // 寫入 cards（published: false 需人工審核/付款）
-    const { error, data } = await supabase.from("cards").insert([{
-      ...form,
-      url_slug,
-      image_url_front,
-      image_url_back,
-      created_at: new Date().toISOString(),
-      published: false,
-      payment_status: "pending"
-    }]).select().single();
+    // ===== 插入資料到 Supabase =====
+    const { error, data } = await supabase
+      .from("cards")
+      .insert([
+        {
+          ...form,
+          url_slug,
+          category_main,
+          category_sub,
+          category_detail,
+          image_url_front,
+          image_url_back,
+          created_at: new Date().toISOString(),
+          published: false,
+          payment_status: "pending",
+        },
+      ])
+      .select()
+      .single();
 
-    setLoading(false);
-
+    // ✅ 錯誤檢查放這裡
     if (error) {
       setMsg("資料上架失敗: " + error.message);
+      setLoading(false);
       return;
     }
+
+    setLoading(false);
 
     // 寄專屬網址至 email
     const cardUrl = `https://www.showall.tw/card/${url_slug}`;
@@ -93,12 +127,11 @@ if (error) console.error("insert failed:", error.message);
           <div style="margin-top:1em;color:#00b300;font-weight:bold">
             邀請朋友註冊上傳名片 <br> 成功推薦即享每人50元回饋！
           </div>
-        `
-      })
+        `,
+      }),
     });
 
     setMsg("資料已提交並 email 寄送，請完成付款...");
-    // 導向付款頁，帶 cardId
     router.push(`/payment?cardId=${data.id}`);
   }
 
@@ -108,28 +141,58 @@ if (error) console.error("insert failed:", error.message);
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8">
-      <h2 className="text-3xl font-bold mb-6 text-blue-800 tracking-wider">名片預覽</h2>
+      <h2 className="text-3xl font-bold mb-6 text-blue-800 tracking-wider">
+        名片預覽
+      </h2>
       <div
         className="rounded-lg shadow-2xl p-8 w-full max-w-md mx-auto border border-gray-200"
         style={{ background: form.theme_color || "#fff" }}
       >
-        <div className="mb-2 text-lg"><strong>姓名：</strong>{form.name}</div>
-        <div className="mb-2 text-lg"><strong>公司：</strong>{form.company}</div>
-        <div className="mb-2 text-lg"><strong>Email：</strong>{form.email}</div>
-        <div className="mb-2"><strong>分類：</strong>
-          <span className="mr-1 text-blue-700">{getCatName(form.category1)}</span>
-          <span className="mr-1 text-blue-500">{getCatName(form.category2)}</span>
+        <div className="mb-2 text-lg">
+          <strong>姓名：</strong>
+          {form.name}
+        </div>
+        <div className="mb-2 text-lg">
+          <strong>公司：</strong>
+          {form.company}
+        </div>
+        <div className="mb-2 text-lg">
+          <strong>Email：</strong>
+          {form.email}
+        </div>
+        <div className="mb-2">
+          <strong>分類：</strong>
+          <span className="mr-1 text-blue-700">
+            {getCatName(form.category1)}
+          </span>
+          <span className="mr-1 text-blue-500">
+            {getCatName(form.category2)}
+          </span>
           <span className="text-blue-400">{getCatName(form.category3)}</span>
         </div>
-        <div className="mb-2 text-lg"><strong>地區：</strong>
+        <div className="mb-2 text-lg">
+          <strong>地區：</strong>
           <span className="mr-1">{form.citys}</span>
           <span>{form.area}</span>
         </div>
-        <div className="mb-2"><strong>Line：</strong>{form.line}</div>
-        <div className="mb-2"><strong>手機：</strong>{form.mobile}</div>
-        <div className="mb-2"><strong>其他聯絡：</strong>{form.contact_other}</div>
-        <div className="mb-2"><strong>自我簡介：</strong>{form.intro}</div>
-        {/* 正面背面圖檔，分上下排 */}
+        <div className="mb-2">
+          <strong>Line：</strong>
+          {form.line}
+        </div>
+        <div className="mb-2">
+          <strong>手機：</strong>
+          {form.mobile}
+        </div>
+        <div className="mb-2">
+          <strong>其他聯絡：</strong>
+          {form.contact_other}
+        </div>
+        <div className="mb-2">
+          <strong>自我簡介：</strong>
+          {form.intro}
+        </div>
+
+        {/* 前後圖片 */}
         <div className="flex flex-col gap-4 my-6">
           <div>
             <div className="font-bold mb-1 text-gray-600">正面</div>
@@ -154,20 +217,33 @@ if (error) console.error("insert failed:", error.message);
             )}
           </div>
         </div>
+
         {/* 按鈕列 */}
         <div className="flex gap-4 my-8 justify-center">
           <button
             className="px-6 py-3 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold shadow"
             onClick={handleEdit}
             disabled={loading}
-          >重新編輯</button>
+          >
+            重新編輯
+          </button>
           <button
             className="px-6 py-3 rounded bg-blue-600 hover:bg-blue-800 text-white font-bold shadow"
             onClick={handlePublish}
             disabled={loading}
-          >馬上上架</button>
+          >
+            馬上上架
+          </button>
         </div>
-        {msg && <div className={`text-center font-bold ${msg.includes('失敗') ? "text-red-600" : "text-green-700"}`}>{msg}</div>}
+        {msg && (
+          <div
+            className={`text-center font-bold ${
+              msg.includes("失敗") ? "text-red-600" : "text-green-700"
+            }`}
+          >
+            {msg}
+          </div>
+        )}
       </div>
     </div>
   );
