@@ -3,6 +3,12 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+// 產生唯一 url_slug（建議寫法）
+function genSlug(name) {
+  return encodeURIComponent(
+    (name || "user") + "-" + Math.floor(Math.random() * 10000000)
+  );
+}
 
 export default function PreviewPage() {
   const router = useRouter();
@@ -20,7 +26,7 @@ export default function PreviewPage() {
     setCategories(JSON.parse(window.sessionStorage.getItem("categories") || "[]"));
   }, []);
 
-function getCatName(id: any) {
+  function getCatName(id: any) {
     if (!id) return "";
     return categories.find(cat => String(cat.id) === String(id))?.name || id;
   }
@@ -29,6 +35,8 @@ function getCatName(id: any) {
     setMsg(""); setLoading(true);
     let image_url_front = form.image_url_front;
     let image_url_back = form.image_url_back;
+
+    // 處理圖片上傳
     if (previewFront && !image_url_front) {
       const front_blob = await (await fetch(previewFront)).blob();
       const fname = `front/${Date.now()}.jpg`;
@@ -43,18 +51,50 @@ function getCatName(id: any) {
       if (backError) { setMsg("背面圖片上傳失敗"); setLoading(false); return; }
       image_url_back = supabase.storage.from('card-images').getPublicUrl(fname).data.publicUrl;
     }
+
+    // 產生專屬網址
+    const url_slug = genSlug(form.name);
+
+    // 寫入 cards（published: false 需人工審核/付款）
     const { error, data } = await supabase.from("cards").insert([{
       ...form,
+      url_slug,
       image_url_front,
       image_url_back,
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      published: false,
+      payment_status: "pending"
     }]).select().single();
+
     setLoading(false);
+
     if (error) {
       setMsg("資料上架失敗: " + error.message);
       return;
     }
-    setMsg("資料已提交，前往付款...");
+
+    // 寄專屬網址至 email
+    const cardUrl = `https://www.showall.tw/card/${url_slug}`;
+    await fetch("/api/sendMail", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: form.email,
+        subject: "您的 SHOWALL 名片專屬網址已建立",
+        html: `
+          <div>您好，您已建立 SHOWALL 專屬名片網址：</div>
+          <div><a href="${cardUrl}">${cardUrl}</a></div>
+          <br>
+          <div>立即回到網站確認資料與付款，或分享此網址給朋友！</div>
+          <div style="margin-top:1em;color:#00b300;font-weight:bold">
+            邀請朋友註冊上傳名片 <br> 成功推薦即享每人50元回饋！
+          </div>
+        `
+      })
+    });
+
+    setMsg("資料已提交並 email 寄送，請完成付款...");
+    // 導向付款頁，帶 cardId
     router.push(`/payment?cardId=${data.id}`);
   }
 
