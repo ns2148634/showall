@@ -1,8 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
+import { supabase } from "@/lib/supabaseClient";
 
 type Card = {
   id: number;
@@ -28,7 +27,6 @@ type Card = {
 export default function CardPage({ params }: { params: { url_slug: string } }) {
   const [card, setCard] = useState<Card | null>(null);
   const [msg, setMsg] = useState("");
-  const router = useRouter();
 
   useEffect(() => {
     async function fetchCard() {
@@ -38,7 +36,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         .eq("url_slug", params.url_slug)
         .eq("published", true)
         .single();
-      if (error) setMsg("查無此名片");
+      if (error || !data) setMsg("查無此名片");
       setCard(data);
     }
     fetchCard();
@@ -49,10 +47,12 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
 
   // 分享按鈕（帶推薦碼 ?referrer=referral_code）
   function handleShare() {
+    if (!card) return;
     const url = `${window.location.origin}/upload?referrer=${card.referral_code || card.url_slug}`;
     window.open(url, "_blank");
   }
   function copyUrl() {
+    if (!card) return;
     navigator.clipboard.writeText(
       `${window.location.origin}/upload?referrer=${card.referral_code || card.url_slug}`
     );
@@ -61,9 +61,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8"
-    >
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8">
       <h2 className="text-3xl font-bold mb-6 text-blue-800 tracking-wider">個人名片頁</h2>
       <div
         className="rounded-lg shadow-2xl p-8 w-full max-w-md mx-auto border border-gray-200"
@@ -101,7 +99,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         <div className="mb-2">
           <strong>自我簡介：</strong>{card.intro}
         </div>
-        {/* 圖片 */}
+        {/* 圖片顯示 */}
         <div className="flex flex-col gap-4 my-6">
           <div>
             <div className="font-bold mb-1 text-gray-600">正面</div>
@@ -143,7 +141,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         </div>
         {msg && <div className="text-center font-bold text-green-700">{msg}</div>}
       </div>
-      {/* 回首頁 */}
       <Link href="/" className="mt-8 text-blue-600 hover:underline">
         ⬅️ 回首頁
       </Link>
