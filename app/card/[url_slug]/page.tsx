@@ -62,7 +62,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8">
-      <h2 className="text-3xl font-bold mb-6 text-blue-800 tracking-wider">個人名片頁</h2>
       <div
         className="rounded-lg shadow-2xl p-8 w-full max-w-md mx-auto border border-gray-200"
         style={{ background: card.theme_color || "#fff" }}
@@ -130,7 +129,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
             className="px-5 py-2 rounded bg-pink-500 text-white hover:bg-pink-700 font-bold"
             onClick={handleShare}
           >
-            直接開啟推薦上傳網址
+            我也要上傳名片
           </button>
           <button
             className="px-5 py-2 rounded bg-blue-600 text-white hover:bg-blue-800 font-bold"

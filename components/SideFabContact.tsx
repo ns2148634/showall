@@ -55,7 +55,7 @@ export default function SideFabContact() {
             <ul className="space-y-3 my-6">
               <li>
                 <a
-                  href="https://line.me/R/ti/p/@你的LINE_ID"
+                  href="https://lin.ee/P979vm2"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="block w-full bg-green-500 hover:bg-green-600 text-white py-3 px-5 rounded-lg font-bold text-base text-center transition"
