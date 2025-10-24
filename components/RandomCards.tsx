@@ -1,26 +1,54 @@
-// app/components/RandomCardsServer.tsx
-import { createClient } from '@/lib/supabase-server' // 客製化 server-side Supabase client
+"use client"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
+import { supabase } from "@/lib/supabaseClient"
 
-export default async function RandomCardsServer({ limit = 10 }) {
-  const supabase = createClient();
-  const { data } = await supabase
-    .from('cards')
-    .select('id, name, job, company, image_url_front, url_slug')
-    .eq('published', true)
-    .order('RANDOM()')
-    .limit(limit);
+type Card = {
+  id: number;
+  name: string;
+  job?: string;
+  company?: string;
+  image_url_front: string;
+  url_slug: string;
+}
 
-  if (!data) return <div>沒有名片資料</div>;
+export default function RandomCards({ limit = 10 }: { limit?: number }) {
+  const [cards, setCards] = useState<Card[]>([])
+
+  useEffect(() => {
+    async function fetchCards() {
+      const { data } = await supabase
+        .from('cards')
+        .select('id, name, job, company, image_url_front, url_slug')
+        .eq('published', true)
+        .order('created_at', { ascending: false })
+        .limit(limit)
+      
+      if (data) setCards(data)
+    }
+    fetchCards()
+  }, [limit])
+
+  if (!cards.length) return <div className="text-center text-gray-400">暫無名片</div>
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
-      {data.map(card => (
-        <a key={card.id} href={`/card/${card.url_slug}`} className="bg-white rounded shadow flex flex-col items-center p-4 hover:shadow-md">
-          <img src={card.image_url_front} alt={card.name} className="w-24 h-24 object-cover rounded mb-2" />
-          <div className="font-bold text-blue-900">{card.name}</div>
-          <div className="text-gray-500">{card.job}</div>
-          <div className="text-xs text-gray-400">{card.company}</div>
-        </a>
+      {cards.map(card => (
+        <Link key={card.id} href={`/card/${card.url_slug}`} className="block">
+          <div className="rounded shadow hover:shadow-lg transition text-center p-4">
+            <Image
+              src={card.image_url_front}
+              alt={card.name}
+              width={96}
+              height={96}
+              className="w-24 h-24 object-cover rounded mx-auto mb-2"
+            />
+            <div className="font-bold text-blue-900">{card.name}</div>
+            {card.job && <div className="text-gray-500 text-sm">{card.job}</div>}
+            {card.company && <div className="text-xs text-gray-400">{card.company}</div>}
+          </div>
+        </Link>
       ))}
     </div>
   )

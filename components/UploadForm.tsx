@@ -6,18 +6,21 @@ import { supabase } from "@/lib/supabaseClient";
 export default function UploadForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const referrer_id = searchParams.get("referrer_id") || null; // ✅ App Router 正確取法
+  const referrer_id = searchParams.get("referrer_id") || null;
 
   // 初始化表單
   const [form, setForm] = useState({
     name: "",
     email: "",
     company: "",
-    category: "",
     city: "",
     area: "",
     mobile: "",
     line: "",
+    tag1: "",
+    tag2: "",
+    tag3: "",
+    tag4: "",
     intro: "",
   });
 
@@ -59,7 +62,7 @@ export default function UploadForm() {
           }),
         });
         alert("上傳成功！已寄出通知信。");
-        router.push(`/card/${data[0].url_slug}`); // 可直接導向專屬名片頁
+        router.push(`/card/${data[0].url_slug}`);
       }
     } catch (err) {
       console.error("上傳或寄信錯誤:", err);
@@ -101,13 +104,79 @@ export default function UploadForm() {
         placeholder="公司/組織"
         className="border rounded p-2 w-full"
       />
+      <input
+        name="city"
+        value={form.city}
+        onChange={handleChange}
+        placeholder="城市"
+        className="border rounded p-2 w-full"
+      />
+      <input
+        name="area"
+        value={form.area}
+        onChange={handleChange}
+        placeholder="地區"
+        className="border rounded p-2 w-full"
+      />
+      <input
+        name="mobile"
+        value={form.mobile}
+        onChange={handleChange}
+        placeholder="手機"
+        className="border rounded p-2 w-full"
+      />
+      <input
+        name="line"
+        value={form.line}
+        onChange={handleChange}
+        placeholder="LINE ID"
+        className="border rounded p-2 w-full"
+      />
+
+      {/* 四個 tag 關鍵字 */}
+      <input
+        name="tag1"
+        value={form.tag1}
+        onChange={handleChange}
+        placeholder="主關鍵字（例：美甲、美睫、美髮）"
+        maxLength={10}
+        className="border rounded p-2 w-full"
+      />
+      <input
+        name="tag2"
+        value={form.tag2}
+        onChange={handleChange}
+        placeholder="次關鍵字一（例：人壽保險、產物保險）"
+        maxLength={10}
+        className="border rounded p-2 w-full"
+      />
+      <input
+        name="tag3"
+        value={form.tag3}
+        onChange={handleChange}
+        placeholder="次關鍵字二（例：水電、木工）"
+        maxLength={10}
+        className="border rounded p-2 w-full"
+      />
+      <input
+        name="tag4"
+        value={form.tag4}
+        onChange={handleChange}
+        placeholder="次關鍵字三（例：健康管理、家教、教練）"
+        maxLength={10}
+        className="border rounded p-2 w-full"
+      />
+
+      {/* 自我簡介 */}
       <textarea
         name="intro"
         value={form.intro}
         onChange={handleChange}
-        placeholder="自我簡介"
+        placeholder="請簡短描述您的服務與特色"
+        maxLength={300}
         className="border rounded p-2 w-full h-24"
       />
+
       <button
         type="submit"
         disabled={loading}

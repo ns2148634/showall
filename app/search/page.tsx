@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
 import AreaSelector from "@/components/AreaSelector"
-import RamdonCards from "@/components/RandomCards"
+import RandomCards from "@/components/RandomCards"
 
 const PAGE_SIZE = 10
 
@@ -127,7 +127,7 @@ export default function SearchPage() {
         </form>
         <div className="text-gray-700 mb-2">{loading ? "載入中..." : `共 ${total} 筆結果`}</div>
         {/* 隨機10張名片（沒條件時） */}
-        {!hasCondition && <RamdonCards limit={10} />}
+        {!hasCondition && <RandomCards limit={10} />}
         {/* 有條件時才顯示 cards 列表 */}
         {hasCondition &&
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
