@@ -16,12 +16,13 @@ type Card = {
   intro?: string;
   image_url_front?: string;
   image_url_back?: string;
-  category_main?: string;
-  category_sub?: string;
-  category_detail?: string;
   url_slug: string;
   referral_code?: string;
   theme_color?: string;
+  tag1?: string;
+  tag2?: string;
+  tag3?: string;
+  tag4?: string;
 };
 
 export default function CardPage({ params }: { params: { url_slug: string } }) {
@@ -45,7 +46,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
   if (msg) return <div className="text-center mt-12 text-red-500 font-bold">{msg}</div>;
   if (!card) return <div className="text-center mt-12 text-gray-400">載入中...</div>;
 
-  // 分享按鈕（帶推薦碼 ?referrer=referral_code）
   function handleShare() {
     if (!card) return;
     const url = `${window.location.origin}/upload?referrer=${card.referral_code || card.url_slug}`;
@@ -75,29 +75,23 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         <div className="mb-2 text-lg">
           <strong>Email：</strong>{card.email}
         </div>
-        <div className="mb-2">
-          <strong>分類：</strong>
-          <span className="mr-1 text-blue-700">{card.category_main}</span>
-          <span className="mr-1 text-blue-500">{card.category_sub}</span>
-          <span className="text-blue-400">{card.category_detail}</span>
-        </div>
         <div className="mb-2 text-lg">
           <strong>地區：</strong>
           <span className="mr-1">{card.citys}</span>
           <span>{card.area}</span>
         </div>
-        <div className="mb-2">
-          <strong>Line：</strong>{card.line}
+        <div className="mb-2"><strong>Line：</strong>{card.line}</div>
+        <div className="mb-2"><strong>手機：</strong>{card.mobile}</div>
+        <div className="mb-2"><strong>其他聯絡：</strong>{card.contact_other}</div>
+        {/* tag 關鍵字顯示 */}
+        <div className="mb-2 flex flex-wrap gap-2">
+          <strong className="w-full">關鍵字：</strong>
+          {card.tag1 && <span className="px-2 py-1 rounded bg-cyan-100 text-cyan-700 text-sm">{card.tag1}</span>}
+          {card.tag2 && <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-sm">{card.tag2}</span>}
+          {card.tag3 && <span className="px-2 py-1 rounded bg-teal-100 text-teal-700 text-sm">{card.tag3}</span>}
+          {card.tag4 && <span className="px-2 py-1 rounded bg-indigo-100 text-indigo-700 text-sm">{card.tag4}</span>}
         </div>
-        <div className="mb-2">
-          <strong>手機：</strong>{card.mobile}
-        </div>
-        <div className="mb-2">
-          <strong>其他聯絡：</strong>{card.contact_other}
-        </div>
-        <div className="mb-2">
-          <strong>自我簡介：</strong>{card.intro}
-        </div>
+        <div className="mb-2"><strong>自我簡介：</strong>{card.intro}</div>
         {/* 圖片顯示 */}
         <div className="flex flex-col gap-4 my-6">
           <div>

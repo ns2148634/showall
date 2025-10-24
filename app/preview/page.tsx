@@ -15,7 +15,6 @@ export default function PreviewPage() {
   const [form, setForm] = useState<any>({});
   const [previewFront, setPreviewFront] = useState("");
   const [previewBack, setPreviewBack] = useState("");
-  const [categories, setCategories] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
@@ -23,17 +22,7 @@ export default function PreviewPage() {
     setForm(JSON.parse(window.sessionStorage.getItem("previewForm") || "{}"));
     setPreviewFront(window.sessionStorage.getItem("previewFront") || "");
     setPreviewBack(window.sessionStorage.getItem("previewBack") || "");
-    setCategories(
-      JSON.parse(window.sessionStorage.getItem("categories") || "[]")
-    );
   }, []);
-
-  function getCatName(id: any) {
-    if (!id) return "";
-    return (
-      categories.find((cat) => String(cat.id) === String(id))?.name || id
-    );
-  }
 
   async function handlePublish() {
     setMsg("");
@@ -57,7 +46,6 @@ export default function PreviewPage() {
         .from("card-images")
         .getPublicUrl(fname).data.publicUrl;
     }
-
     if (previewBack && !image_url_back) {
       const back_blob = await (await fetch(previewBack)).blob();
       const fname = `back/${Date.now()}.jpg`;
@@ -74,11 +62,6 @@ export default function PreviewPage() {
         .getPublicUrl(fname).data.publicUrl;
     }
 
-    // ===== 新增這三行：從 ID 找名稱 =====
-    const category_main = getCatName(form.category1);
-    const category_sub = getCatName(form.category2);
-    const category_detail = getCatName(form.category3);
-
     // 產生專屬網址
     const url_slug = genSlug(form.name);
 
@@ -89,9 +72,6 @@ export default function PreviewPage() {
         {
           ...form,
           url_slug,
-          category_main,
-          category_sub,
-          category_detail,
           image_url_front,
           image_url_back,
           created_at: new Date().toISOString(),
@@ -102,7 +82,6 @@ export default function PreviewPage() {
       .select()
       .single();
 
-    // ✅ 錯誤檢查放這裡
     if (error) {
       setMsg("資料上架失敗: " + error.message);
       setLoading(false);
@@ -148,51 +127,30 @@ export default function PreviewPage() {
         className="rounded-lg shadow-2xl p-8 w-full max-w-md mx-auto border border-gray-200"
         style={{ background: form.theme_color || "#fff" }}
       >
+        <div className="mb-2 text-lg"><strong>姓名：</strong>{form.name}</div>
+        <div className="mb-2 text-lg"><strong>公司：</strong>{form.company}</div>
+        <div className="mb-2 text-lg"><strong>Email：</strong>{form.email}</div>
         <div className="mb-2 text-lg">
-          <strong>姓名：</strong>
-          {form.name}
+          <strong>地區：</strong><span className="mr-1">{form.citys}</span><span>{form.area}</span>
         </div>
-        <div className="mb-2 text-lg">
-          <strong>公司：</strong>
-          {form.company}
-        </div>
-        <div className="mb-2 text-lg">
-          <strong>Email：</strong>
-          {form.email}
-        </div>
-        <div className="mb-2">
-          <strong>分類：</strong>
-          <span className="mr-1 text-blue-700">
-            {getCatName(form.category1)}
-          </span>
-          <span className="mr-1 text-blue-500">
-            {getCatName(form.category2)}
-          </span>
-          <span className="text-blue-400">{getCatName(form.category3)}</span>
-        </div>
-        <div className="mb-2 text-lg">
-          <strong>地區：</strong>
-          <span className="mr-1">{form.citys}</span>
-          <span>{form.area}</span>
-        </div>
-        <div className="mb-2">
-          <strong>Line：</strong>
-          {form.line}
-        </div>
-        <div className="mb-2">
-          <strong>手機：</strong>
-          {form.mobile}
-        </div>
-        <div className="mb-2">
-          <strong>其他聯絡：</strong>
-          {form.contact_other}
+        <div className="mb-2"><strong>Line：</strong>{form.line}</div>
+        <div className="mb-2"><strong>手機：</strong>{form.mobile}</div>
+        <div className="mb-2"><strong>其他聯絡：</strong>{form.contact_other}</div>
+
+        {/* 四tag關鍵字 */}
+        <div className="mb-2 flex flex-wrap gap-2">
+          <strong className="w-full">關鍵字：</strong>
+          {form.tag1 && <span className="px-2 py-1 rounded bg-cyan-100 text-cyan-700 text-sm">{form.tag1}</span>}
+          {form.tag2 && <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-sm">{form.tag2}</span>}
+          {form.tag3 && <span className="px-2 py-1 rounded bg-teal-100 text-teal-700 text-sm">{form.tag3}</span>}
+          {form.tag4 && <span className="px-2 py-1 rounded bg-indigo-100 text-indigo-700 text-sm">{form.tag4}</span>}
         </div>
         <div className="mb-2">
           <strong>自我簡介：</strong>
           {form.intro}
         </div>
 
-        {/* 前後圖片 */}
+        {/* 前/背面 */}
         <div className="flex flex-col gap-4 my-6">
           <div>
             <div className="font-bold mb-1 text-gray-600">正面</div>
@@ -218,7 +176,7 @@ export default function PreviewPage() {
           </div>
         </div>
 
-        {/* 按鈕列 */}
+        {/* 按鈕區 */}
         <div className="flex gap-4 my-8 justify-center">
           <button
             className="px-6 py-3 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold shadow"
@@ -236,13 +194,7 @@ export default function PreviewPage() {
           </button>
         </div>
         {msg && (
-          <div
-            className={`text-center font-bold ${
-              msg.includes("失敗") ? "text-red-600" : "text-green-700"
-            }`}
-          >
-            {msg}
-          </div>
+          <div className={`text-center font-bold ${msg.includes("失敗") ? "text-red-600" : "text-green-700"}`}>{msg}</div>
         )}
       </div>
     </div>
