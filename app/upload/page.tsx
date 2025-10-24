@@ -195,13 +195,13 @@ function UploadCardPageInner() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              公司 / 組織 <span className="text-gray-500 text-xs">(上限60字)</span>
+              公司 / 組織 <span className="text-gray-500 text-xs">(上限20字)</span>
             </label>
             <input
               type="text"
               className="border p-2 rounded w-full"
               value={form.company}
-              maxLength={60}
+              maxLength={20}
               onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
               placeholder="請輸入公司或組織團體名稱"
             />
@@ -263,7 +263,7 @@ function UploadCardPageInner() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              主關鍵字 <span className="text-gray-500 text-xs">(上限10字)</span>
+              經營項目一 <span className="text-gray-500 text-xs">(上限10字)</span>
             </label>
             <input
               type="text"
@@ -276,7 +276,7 @@ function UploadCardPageInner() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              次關鍵字一 <span className="text-gray-500 text-xs">(上限10字)</span>
+              經營項目二 <span className="text-gray-500 text-xs">(上限10字)</span>
             </label>
             <input
               type="text"
@@ -289,7 +289,7 @@ function UploadCardPageInner() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              次關鍵字二 <span className="text-gray-500 text-xs">(上限10字)</span>
+              經營項目三 <span className="text-gray-500 text-xs">(上限10字)</span>
             </label>
             <input
               type="text"
@@ -302,7 +302,7 @@ function UploadCardPageInner() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              次關鍵字三 <span className="text-gray-500 text-xs">(上限10字)</span>
+              經營項目四 <span className="text-gray-500 text-xs">(上限10字)</span>
             </label>
             <input
               type="text"
@@ -316,7 +316,7 @@ function UploadCardPageInner() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              自我簡介 <span className="text-gray-500 text-xs">(上限300字)</span>
+              自我簡介 <span className="text-gray-500 text-xs">(上限30字)</span>
             </label>
             <textarea
               className="border p-2 rounded w-full"
@@ -336,11 +336,10 @@ function UploadCardPageInner() {
                   key={opt.color}
                   type="button"
                   onClick={() => setForm(f => ({ ...f, theme_color: opt.color }))}
-                  className={`w-16 h-16 rounded-lg border-2 transition-all hover:scale-110 ${
-                    form.theme_color === opt.color
+                  className={`w-16 h-16 rounded-lg border-2 transition-all hover:scale-110 ${form.theme_color === opt.color
                       ? "border-blue-600 ring-2 ring-blue-300"
                       : "border-gray-300"
-                  }`}
+                    }`}
                   style={{ backgroundColor: opt.color }}
                   title={opt.name}
                 >
@@ -402,21 +401,14 @@ function UploadCardPageInner() {
             className="w-full py-3 mt-6 rounded bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition disabled:opacity-50"
             onClick={handlePreview}
           >
-            名片預覽
-          </button>
-          <button
-            type="button"
-            disabled={loading}
-            className="w-full py-3 mt-3 rounded bg-green-600 text-white text-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
-            onClick={handlePublish}
-          >
-            馬上上架
+            預覽名片
           </button>
           {msg && (
             <div className={`mt-3 text-center font-bold ${msg.includes('成功') ? "text-green-600" : "text-red-500"}`}>
               {msg}
             </div>
           )}
+
         </form>
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">

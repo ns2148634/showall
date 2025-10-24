@@ -13,7 +13,12 @@ type Card = {
   url_slug: string;
 }
 
-export default function RandomCards({ limit = 10 }: { limit?: number }) {
+// ← 加上這個型別定義
+type RandomCardsProps = {
+  limit?: number;
+}
+
+export default function RandomCards({ limit = 10 }: RandomCardsProps) {
   const [cards, setCards] = useState<Card[]>([])
 
   useEffect(() => {
@@ -36,7 +41,7 @@ export default function RandomCards({ limit = 10 }: { limit?: number }) {
     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
       {cards.map(card => (
         <Link key={card.id} href={`/card/${card.url_slug}`} className="block">
-          <div className="rounded shadow hover:shadow-lg transition text-center p-4">
+          <div className="rounded shadow hover:shadow-lg transition text-center p-4 bg-white">
             <Image
               src={card.image_url_front}
               alt={card.name}

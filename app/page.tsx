@@ -66,8 +66,8 @@ export default function Home() {
                   <Image
                     src={card.image_url_front}
                     alt="名片正面"
-                    width={160}
-                    height={96}
+                    width={180}
+                    height={110}
                     className="mx-auto rounded object-cover"
                   />
                 </div>

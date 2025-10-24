@@ -20,18 +20,22 @@ export default function SearchPage() {
   const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
+  // 抓取城市（拿掉 sort_order）
   useEffect(() => {
     async function fetchCities() {
       const { data: cityObjs } = await supabase
         .from('cities')
-        .select('citys, sort_order')
-        .neq('citys', null)
-        .order('sort_order')
-      setCities(["全部", ...Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)))])
+        .select('citys');  // ← 只抓 citys
+      
+      const uniqueCities = Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)))
+        .sort();  // ← 字母排序
+      
+      setCities(["全部", ...uniqueCities]);
     }
     fetchCities()
   }, [])
 
+  // 根據選擇的城市抓地區（拿掉 sort_order）
   useEffect(() => {
     async function fetchAreas() {
       if (selectedCity === "全部") {
@@ -41,10 +45,13 @@ export default function SearchPage() {
       }
       const { data: ds } = await supabase
         .from('cities')
-        .select('district, sort_order')
+        .select('district')  // ← 只抓 district
         .eq('citys', selectedCity)
-        .order('sort_order')
-      setAreas(["全部", ...Array.from(new Set(ds?.map(a => a.district).filter(Boolean)))])
+      
+      const uniqueAreas = Array.from(new Set(ds?.map(a => a.district).filter(Boolean)))
+        .sort();  // ← 字母排序
+      
+      setAreas(["全部", ...uniqueAreas])
       setSelectedArea("全部")
     }
     fetchAreas()
@@ -71,9 +78,10 @@ export default function SearchPage() {
       query = query.or([
         `name.ilike.%${keyword.trim()}%`,
         `company.ilike.%${keyword.trim()}%`,
-        `category_main.ilike.%${keyword.trim()}%`,
-        `category_sub.ilike.%${keyword.trim()}%`,
-        `category_detail.ilike.%${keyword.trim()}%`,
+        `tag1.ilike.%${keyword.trim()}%`,
+        `tag2.ilike.%${keyword.trim()}%`,
+        `tag3.ilike.%${keyword.trim()}%`,
+        `tag4.ilike.%${keyword.trim()}%`,
         `intro.ilike.%${keyword.trim()}%`,
         `citys.ilike.%${keyword.trim()}%`,
         `area.ilike.%${keyword.trim()}%`
@@ -81,9 +89,8 @@ export default function SearchPage() {
     }
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
-    else query = query.order('random()')
-    const from = (page - 1) * PAGE_SIZE
-    const to = page * PAGE_SIZE - 1
+    const from = (page-1)*PAGE_SIZE
+    const to = page*PAGE_SIZE-1
     const { data, count } = await query.range(from, to)
     setCards(data || [])
     setTotal(count || 0)
@@ -107,7 +114,7 @@ export default function SearchPage() {
             maxLength={30}
             placeholder="關鍵字（姓名、簡介…）"
             className="border rounded p-2 w-44"
-            onChange={e => setKeyword(e.target.value)}
+            onChange={e=>setKeyword(e.target.value)}
           />
           <AreaSelector
             cities={cities}
@@ -117,23 +124,25 @@ export default function SearchPage() {
             selectedArea={selectedArea}
             setSelectedArea={setSelectedArea}
           />
-
-          <select className="p-2 rounded border" value={order} onChange={e => setOrder(e.target.value)}>
+          <select className="p-2 rounded border" value={order} onChange={e=>setOrder(e.target.value)}>
             <option value="random">隨機排序</option>
             <option value="created">刊登最近</option>
             <option value="views">瀏覽最多</option>
           </select>
           <button type="submit" className="bg-blue-600 text-white rounded px-4">搜尋</button>
         </form>
+        
         <div className="text-gray-700 mb-2">{loading ? "載入中..." : `共 ${total} 筆結果`}</div>
+        
         {/* 隨機10張名片（沒條件時） */}
         {!hasCondition && <RandomCards limit={10} />}
+        
         {/* 有條件時才顯示 cards 列表 */}
         {hasCondition &&
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
             {cards.map(card => (
               <Link key={card.id} href={`/card/${card.url_slug}`}>
-                <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center">
+                <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center p-4">
                   <Image
                     src={card.image_url_front}
                     alt={card.name}
@@ -150,14 +159,15 @@ export default function SearchPage() {
             ))}
           </div>
         }
+        
         {hasCondition &&
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
-            {Array.from({ length: Math.ceil(total / PAGE_SIZE) }, (_, i) => (
+            {Array.from({length: Math.ceil(total/PAGE_SIZE)}, (_,i) => (
               <button
                 key={i}
-                className={`px-3 py-1 rounded ${page === i + 1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
-                onClick={() => setPage(i + 1)}
-              >{i + 1}</button>
+                className={`px-3 py-1 rounded ${page===i+1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
+                onClick={()=>setPage(i+1)}
+              >{i+1}</button>
             ))}
           </div>
         }
