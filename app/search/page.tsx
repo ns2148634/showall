@@ -3,6 +3,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
 import AreaSelector from "@/components/AreaSelector"
+import RamdonCards from "@/components/ramdoncards"
 
 const PAGE_SIZE = 10
 
@@ -18,28 +19,48 @@ export default function SearchPage() {
   const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
-  // 載入所有城市/地區選單
+  // 載入所有城市選單，排序
   useEffect(() => {
     async function fetchCities() {
-      const { data: cityObjs } = await supabase.from('cities').select('citys').neq('citys', null).order('sort_order')
+      const { data: cityObjs } = await supabase
+        .from('cities')
+        .select('citys, sort_order')
+        .neq('citys', null)
+        .order('sort_order')
       setCities(["全部", ...Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)))])
     }
     fetchCities()
   }, [])
 
-  // 城市→區域下拉
+  // 城市→區域下拉，排序
   useEffect(() => {
     async function fetchAreas() {
-      if (selectedCity === "全部") { setAreas(["全部"]); setSelectedArea("全部"); return }
-      const { data: ds } = await supabase.from('cities').select('district').eq('citys', selectedCity).order('sort_order')
+      if (selectedCity === "全部") {
+        setAreas(["全部"]);
+        setSelectedArea("全部");
+        return;
+      }
+      const { data: ds } = await supabase
+        .from('cities')
+        .select('district, sort_order')
+        .eq('citys', selectedCity)
+        .order('sort_order')
       setAreas(["全部", ...Array.from(new Set(ds?.map(a => a.district).filter(Boolean)))])
       setSelectedArea("全部")
     }
     fetchAreas()
   }, [selectedCity])
 
-  // 查詢
+  // 條件判斷
+  const hasCondition =
+    keyword.trim() ||
+    (selectedCity && selectedCity !== "全部") ||
+    (selectedArea && selectedArea !== "全部") ||
+    order !== "random" ||
+    page > 1
+
   useEffect(() => {
+    if (!hasCondition) return
     fetchCards()
     // eslint-disable-next-line
   }, [page, order, selectedCity, selectedArea, keyword])
@@ -66,7 +87,7 @@ export default function SearchPage() {
     // 排序
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
-    else query = query.order('random')
+    else query = query.order('random()')
     // 分頁
     const from = (page-1)*PAGE_SIZE
     const to = page*PAGE_SIZE-1
@@ -76,7 +97,6 @@ export default function SearchPage() {
     setLoading(false)
   }
 
-  // 重新搜尋要還原分頁
   function doSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setPage(1)
@@ -111,30 +131,36 @@ export default function SearchPage() {
           </select>
           <button type="submit" className="bg-blue-600 text-white rounded px-4">搜尋</button>
         </form>
-        {/* 結果 */}
         <div className="text-gray-700 mb-2">{loading ? "載入中..." : `共 ${total} 筆結果`}</div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
-          {cards.map(card => (
-            <Link key={card.id} href={`/card/${card.id}`}>
-              <div className="bg-white rounded shadow flex flex-col items-center p-4 hover:shadow-md">
-                <img src={card.image_url_front} alt={card.name} className="w-24 h-24 object-cover rounded mb-2" />
-                <div className="font-bold text-blue-900">{card.name}</div>
-                <div className="text-gray-500">{card.company}</div>
-                <div className="text-xs text-gray-400">{card.citys}{card.area && "・"+card.area}</div>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {/* 隨機10張名片（沒條件時） */}
+        {!hasCondition && <RamdonCards limit={10} />}
+        {/* 有條件時才顯示 cards 列表 */}
+        {hasCondition &&
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
+            {cards.map(card => (
+              <Link key={card.id} href={`/card/${card.id}`}>
+                <div className="bg-white rounded shadow flex flex-col items-center p-4 hover:shadow-md">
+                  <img src={card.image_url_front} alt={card.name} className="w-24 h-24 object-cover rounded mb-2" />
+                  <div className="font-bold text-blue-900">{card.name}</div>
+                  <div className="text-gray-500">{card.company}</div>
+                  <div className="text-xs text-gray-400">{card.citys}{card.area && "・" + card.area}</div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        }
         {/* 分頁 */}
-        <div className="flex flex-wrap gap-2 justify-center items-center my-6">
-          {Array.from({length: Math.ceil(total/PAGE_SIZE)}, (_,i) => (
-            <button
-              key={i}
-              className={`px-3 py-1 rounded ${page===i+1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
-              onClick={()=>setPage(i+1)}
-            >{i+1}</button>
-          ))}
-        </div>
+        {hasCondition &&
+          <div className="flex flex-wrap gap-2 justify-center items-center my-6">
+            {Array.from({length: Math.ceil(total/PAGE_SIZE)}, (_,i) => (
+              <button
+                key={i}
+                className={`px-3 py-1 rounded ${page===i+1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
+                onClick={()=>setPage(i+1)}
+              >{i+1}</button>
+            ))}
+          </div>
+        }
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
         &copy; 2025 SHOWALL 百業名片網

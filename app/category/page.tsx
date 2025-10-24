@@ -4,8 +4,7 @@ import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
 import CategorySelector from "@/components/CategorySelector"
 import AreaSelector from "@/components/AreaSelector"
-
-// 注意: AreaSelector 要用 onCityChange/onAreaChange 寫法
+import RamdonCards from "@/components/ramdoncards"
 
 const PAGE_SIZE = 10
 
@@ -25,7 +24,6 @@ export default function CategoryPage() {
   const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
-  // Init 分類/城市
   useEffect(() => {
     async function fetchData() {
       const { data: cats } = await supabase.from('categories').select('*').order('sort_order')
@@ -36,7 +34,6 @@ export default function CategoryPage() {
     fetchData()
   }, [])
 
-  // 行政區下拉
   useEffect(() => {
     async function fetchAreas() {
       if (selectedCity === "全部") { setAreas(["全部"]); setSelectedArea("全部"); return }
@@ -47,8 +44,16 @@ export default function CategoryPage() {
     fetchAreas()
   }, [selectedCity])
 
-  // 搜尋
+  // 判斷是否有篩選條件
+  const hasCondition =
+    selectedMain || selectedSub || selectedThird ||
+    (selectedCity && selectedCity !== "全部") ||
+    (selectedArea && selectedArea !== "全部") ||
+    keyword.trim() || order !== "random" || page > 1
+
+  // 只有有條件時才搜尋資料
   useEffect(() => {
+    if (!hasCondition) return
     fetchCards()
     // eslint-disable-next-line
   }, [selectedMain, selectedSub, selectedThird, selectedCity, selectedArea, order, page, keyword])
@@ -56,14 +61,11 @@ export default function CategoryPage() {
   async function fetchCards() {
     setLoading(true)
     let query = supabase.from('cards').select('*', { count: "exact" }).eq('published', true)
-    // 三層分類查詢 (用id)
     if (selectedMain) query = query.eq('category1', Number(selectedMain))
     if (selectedSub) query = query.eq('category2', Number(selectedSub))
     if (selectedThird) query = query.eq('category3', Number(selectedThird))
-    // 地區查詢
     if (selectedCity !== "全部") query = query.eq('citys', selectedCity)
     if (selectedArea !== "全部") query = query.eq('area', selectedArea)
-    // 關鍵字多欄搜尋
     if (keyword.trim()) {
       query = query.or([
         `name.ilike.%${keyword.trim()}%`,
@@ -74,7 +76,6 @@ export default function CategoryPage() {
         `area.ilike.%${keyword.trim()}%`
       ].join(','))
     }
-    // 排序
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
     else query = query.order('random()')
@@ -103,10 +104,10 @@ export default function CategoryPage() {
           <AreaSelector
             cities={cities}
             selectedCity={selectedCity}
-            onCityChange={setSelectedCity}
+            setSelectedCity={setSelectedCity}
             areas={areas}
             selectedArea={selectedArea}
-            onAreaChange={setSelectedArea}
+            setSelectedArea={setSelectedArea}
           />
           <input
             type="text"
@@ -123,12 +124,29 @@ export default function CategoryPage() {
           </select>
         </div>
         <div className="text-gray-700 mb-2">{loading ? "載入中..." : `共 ${total} 筆結果`}</div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
-          {cards.map(card => (
-            <Link key={card.id} href={`/card/${card.url_slug}`}>
-              <div className="bg-white rounded shadow flex flex-col items-center p-4 hover:shadow-md">
-                <img src={card.image_url_front} alt={card.name} className="w-24 h-24 object-cover rounded mb-2" />
-                <div className="font-bold text-blue-900">{card.name}</div>
-                <div className="text-gray-500">{card.job}</div>
-                <div className="text-xs text-gray-400">{card.company}</div>
-                <div className="text-xs text-gray-400">{card.citys}{card.area && "・"+
+
+        {/* 隨機10張名片（沒條件） */}
+        {!hasCondition && <RamdonCards limit={10} />}
+
+        {/* 有條件時才出現 cards 列表 */}
+        {hasCondition &&
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
+            {cards.map(card => (
+              <Link key={card.id} href={`/card/${card.url_slug}`}>
+                <div className="bg-white rounded shadow flex flex-col items-center p-4 hover:shadow-md">
+                  <img src={card.image_url_front} alt={card.name} className="w-24 h-24 object-cover rounded mb-2" />
+                  <div className="font-bold text-blue-900">{card.name}</div>
+                  <div className="text-gray-500">{card.job}</div>
+                  <div className="text-xs text-gray-400">{card.company}</div>
+                  <div className="text-xs text-gray-400">
+                    {card.citys}{card.area && "・" + card.area}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        }
+      </main>
+    </div>
+  )
+}
