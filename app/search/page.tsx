@@ -2,7 +2,9 @@
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { supabase } from "@/lib/supabaseClient"
-const PAGE_SIZE = 10; // 或你要的分頁大小
+import AreaSelector from "@/components/AreaSelector"
+
+const PAGE_SIZE = 10
 
 export default function SearchPage() {
   const [keyword, setKeyword] = useState("")
@@ -15,11 +17,11 @@ export default function SearchPage() {
   const [total, setTotal] = useState(0)
   const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
- 
+
   // 載入所有城市/地區選單
   useEffect(() => {
     async function fetchCities() {
-      const { data: cityObjs } = await supabase.from('cities').select('citys').neq('citys', null)
+      const { data: cityObjs } = await supabase.from('cities').select('citys').neq('citys', null).order('sort_order')
       setCities(["全部", ...Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)))])
     }
     fetchCities()
@@ -29,7 +31,7 @@ export default function SearchPage() {
   useEffect(() => {
     async function fetchAreas() {
       if (selectedCity === "全部") { setAreas(["全部"]); setSelectedArea("全部"); return }
-      const { data: ds } = await supabase.from('cities').select('district').eq('citys', selectedCity)
+      const { data: ds } = await supabase.from('cities').select('district').eq('citys', selectedCity).order('sort_order')
       setAreas(["全部", ...Array.from(new Set(ds?.map(a => a.district).filter(Boolean)))])
       setSelectedArea("全部")
     }
@@ -40,39 +42,34 @@ export default function SearchPage() {
   useEffect(() => {
     fetchCards()
     // eslint-disable-next-line
-  }, [page, order, selectedCity, selectedArea])
+  }, [page, order, selectedCity, selectedArea, keyword])
 
   async function fetchCards() {
     setLoading(true)
     let query = supabase.from('cards').select('*', { count: "exact" }).eq('published', true)
-   
-if (keyword.trim()) {
-  query = query.or(
-    [
-      `name.ilike.%${keyword.trim()}%`,
-      `company.ilike.%${keyword.trim()}%`,
-      `category_main.ilike.%${keyword.trim()}%`,
-      `category_sub.ilike.%${keyword.trim()}%`,
-      `category_detail.ilike.%${keyword.trim()}%`,
-      `intro.ilike.%${keyword.trim()}%`,
-      `citys.ilike.%${keyword.trim()}%`,
-      `area.ilike.%${keyword.trim()}%`
-    ].join(',')
-  )
-}
-
+    // 城市/區篩選
     if (selectedCity !== "全部") query = query.eq('citys', selectedCity)
     if (selectedArea !== "全部") query = query.eq('area', selectedArea)
-
+    // 關鍵字 (多欄搜尋)
+    if (keyword.trim()) {
+      query = query.or([
+        `name.ilike.%${keyword.trim()}%`,
+        `company.ilike.%${keyword.trim()}%`,
+        `category_main.ilike.%${keyword.trim()}%`,
+        `category_sub.ilike.%${keyword.trim()}%`,
+        `category_detail.ilike.%${keyword.trim()}%`,
+        `intro.ilike.%${keyword.trim()}%`,
+        `citys.ilike.%${keyword.trim()}%`,
+        `area.ilike.%${keyword.trim()}%`
+      ].join(','))
+    }
     // 排序
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
     else query = query.order('random')
-
     // 分頁
     const from = (page-1)*PAGE_SIZE
     const to = page*PAGE_SIZE-1
-
     const { data, count } = await query.range(from, to)
     setCards(data || [])
     setTotal(count || 0)
@@ -99,12 +96,14 @@ if (keyword.trim()) {
             className="border rounded p-2 w-44"
             onChange={e=>setKeyword(e.target.value)}
           />
-          <select className="p-2 rounded border" value={selectedCity} onChange={e=>setSelectedCity(e.target.value)}>
-            {cities.map(city => <option key={city}>{city}</option>)}
-          </select>
-          <select className="p-2 rounded border" value={selectedArea} onChange={e=>setSelectedArea(e.target.value)}>
-            {areas.map(area => <option key={area}>{area}</option>)}
-          </select>
+          <AreaSelector
+            cities={cities}
+            selectedCity={selectedCity}
+            onCityChange={setSelectedCity}
+            areas={areas}
+            selectedArea={selectedArea}
+            onAreaChange={setSelectedArea}
+          />
           <select className="p-2 rounded border" value={order} onChange={e=>setOrder(e.target.value)}>
             <option value="random">隨機排序</option>
             <option value="created">刊登最近</option>
