@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { supabase } from "@/lib/supabaseClient"
 import AreaSelector from "@/components/AreaSelector"
-import RamdonCards from "@/components/ramdoncards"
+import RamdonCards from "@/components/RandomCards"
 
 const PAGE_SIZE = 10
 
@@ -82,8 +82,8 @@ export default function SearchPage() {
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
     else query = query.order('random()')
-    const from = (page-1)*PAGE_SIZE
-    const to = page*PAGE_SIZE-1
+    const from = (page - 1) * PAGE_SIZE
+    const to = page * PAGE_SIZE - 1
     const { data, count } = await query.range(from, to)
     setCards(data || [])
     setTotal(count || 0)
@@ -107,17 +107,18 @@ export default function SearchPage() {
             maxLength={30}
             placeholder="關鍵字（姓名、簡介…）"
             className="border rounded p-2 w-44"
-            onChange={e=>setKeyword(e.target.value)}
+            onChange={e => setKeyword(e.target.value)}
           />
           <AreaSelector
             cities={cities}
             selectedCity={selectedCity}
-            onCityChange={setSelectedCity}
+            setSelectedCity={setSelectedCity}
             areas={areas}
             selectedArea={selectedArea}
-            onAreaChange={setSelectedArea}
+            setSelectedArea={setSelectedArea}
           />
-          <select className="p-2 rounded border" value={order} onChange={e=>setOrder(e.target.value)}>
+
+          <select className="p-2 rounded border" value={order} onChange={e => setOrder(e.target.value)}>
             <option value="random">隨機排序</option>
             <option value="created">刊登最近</option>
             <option value="views">瀏覽最多</option>
@@ -151,12 +152,12 @@ export default function SearchPage() {
         }
         {hasCondition &&
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
-            {Array.from({length: Math.ceil(total/PAGE_SIZE)}, (_,i) => (
+            {Array.from({ length: Math.ceil(total / PAGE_SIZE) }, (_, i) => (
               <button
                 key={i}
-                className={`px-3 py-1 rounded ${page===i+1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
-                onClick={()=>setPage(i+1)}
-              >{i+1}</button>
+                className={`px-3 py-1 rounded ${page === i + 1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
+                onClick={() => setPage(i + 1)}
+              >{i + 1}</button>
             ))}
           </div>
         }
