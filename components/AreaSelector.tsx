@@ -15,12 +15,26 @@ export default function AreaSelector({
 }: AreaSelectorProps) {
   return (
     <div className="flex gap-2">
-      <select className="p-2 rounded border" value={selectedCity} onChange={e => setSelectedCity(e.target.value)}>
-        {cities.map(city => <option key={city}>{city}</option>)}
-      </select>
-      <select className="p-2 rounded border" value={selectedArea} onChange={e => setSelectedArea(e.target.value)}>
-        {areas.map(area => <option key={area}>{area}</option>)}
-      </select>
+      <div>
+        <label className="block text-xs text-gray-600 mb-1">城市</label>
+        <select 
+          className="p-2 rounded border" 
+          value={selectedCity} 
+          onChange={e => setSelectedCity(e.target.value)}
+        >
+          {cities.map(city => <option key={city}>{city}</option>)}
+        </select>
+      </div>
+      <div>
+        <label className="block text-xs text-gray-600 mb-1">地區</label>
+        <select 
+          className="p-2 rounded border" 
+          value={selectedArea} 
+          onChange={e => setSelectedArea(e.target.value)}
+        >
+          {areas.map(area => <option key={area}>{area}</option>)}
+        </select>
+      </div>
     </div>
   );
 }

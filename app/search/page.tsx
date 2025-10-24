@@ -146,12 +146,11 @@ export default function SearchPage() {
                   <Image
                     src={card.image_url_front}
                     alt={card.name}
-                    width={96}
-                    height={96}
+                    width={180}
+                    height={110}
                     className="w-24 h-24 object-cover rounded mb-2"
                   />
                   <div className="font-bold text-blue-900">{card.name}</div>
-                  <div className="text-gray-500">{card.job}</div>
                   <div className="text-xs text-gray-400">{card.company}</div>
                   <div className="text-xs text-gray-400">{card.citys}{card.area && "・" + card.area}</div>
                 </div>
