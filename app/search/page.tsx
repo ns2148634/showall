@@ -44,17 +44,30 @@ export default function SearchPage() {
 
   async function fetchCards() {
     setLoading(true)
-    let query = supabase.from('cards').select('*', { count: "exact" }).eq('is_paid', true)
-    if (keyword.trim()) {
-      query = query.ilike('name', `%${keyword.trim()}%`)
-    }
+    let query = supabase.from('cards').select('*', { count: "exact" }).eq('published', true)
+   
+if (keyword.trim()) {
+  query = query.or(
+    [
+      `name.ilike.%${keyword.trim()}%`,
+      `company.ilike.%${keyword.trim()}%`,
+      `category_main.ilike.%${keyword.trim()}%`,
+      `category_sub.ilike.%${keyword.trim()}%`,
+      `category_detail.ilike.%${keyword.trim()}%`,
+      `intro.ilike.%${keyword.trim()}%`,
+      `citys.ilike.%${keyword.trim()}%`,
+      `area.ilike.%${keyword.trim()}%`
+    ].join(',')
+  )
+}
+
     if (selectedCity !== "全部") query = query.eq('citys', selectedCity)
     if (selectedArea !== "全部") query = query.eq('area', selectedArea)
 
     // 排序
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
-    else query = query.order('random()')
+    else query = query.order('random')
 
     // 分頁
     const from = (page-1)*PAGE_SIZE
