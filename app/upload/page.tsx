@@ -73,7 +73,6 @@ export default function UploadCardPage() {
     fetchAreas();
   }, [form.citys]);
 
-  // 檔案處理
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, type: "front" | "back") {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
@@ -120,7 +119,6 @@ export default function UploadCardPage() {
 
     // 圖片上傳略...
 
-    // 產生 url_slug
     function genSlug(name: string): string {
       return encodeURIComponent(
         (name || "user") + "-" + Math.floor(Math.random() * 10000000)
@@ -128,12 +126,10 @@ export default function UploadCardPage() {
     }
     const url_slug = genSlug(form.name);
 
-    // 主分類/次/細分類名稱
     const category_main = categories.find(cat => String(cat.id) === String(form.category1))?.name || "";
     const category_sub = categories.find(cat => String(cat.id) === String(form.category2))?.name || "";
     const category_detail = categories.find(cat => String(cat.id) === String(form.category3))?.name || "";
 
-    // 插入名片
     const { error, data: newCard } = await supabase
       .from("cards")
       .insert([
@@ -147,7 +143,7 @@ export default function UploadCardPage() {
           image_url_back: form.image_url_back,
           created_at: new Date().toISOString(),
           published: false,
-          payment_status: "pending",
+          payment_status: "pending"
         }
       ])
       .select()
@@ -158,8 +154,6 @@ export default function UploadCardPage() {
       setLoading(false);
       return;
     }
-
-    // 推薦碼/獎勵機制略...
 
     setLoading(false);
     setMsg("資料已提交並 email 寄送，請完成付款...");
@@ -181,7 +175,6 @@ export default function UploadCardPage() {
       <main className="max-w-lg mx-auto py-10">
         <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={e => e.preventDefault()}>
           <h2 className="text-xl font-bold text-center text-gray-700 mb-6">名片上傳</h2>
-          {/* 分類元件 */}
           <CategorySelector
             categories={categories}
             selectedMain={form.category1}
@@ -191,7 +184,6 @@ export default function UploadCardPage() {
             selectedThird={form.category3}
             setSelectedThird={val => setForm(f => ({ ...f, category3: val }))}
           />
-          {/* 地區元件 */}
           <AreaSelector
             cities={cities}
             selectedCity={form.citys}
@@ -200,7 +192,6 @@ export default function UploadCardPage() {
             selectedArea={form.area}
             setSelectedArea={val => setForm(f => ({ ...f, area: val }))}
           />
-          {/* 其他欄位一樣插入 */}
           <input type="email" className="border p-2 rounded w-full" required value={form.email}
             maxLength={120} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
             placeholder="電子信箱" />
@@ -222,20 +213,40 @@ export default function UploadCardPage() {
           <textarea className="border p-2 rounded w-full" value={form.intro}
             maxLength={300} onChange={e => setForm(f => ({ ...f, intro: e.target.value }))}
             placeholder="簡介 / 專業 / 資歷 / 推薦" rows={3} />
-          {/* 背景色 */}
           <select className="border p-2 rounded w-full" value={form.theme_color}
             onChange={e => setForm(f => ({ ...f, theme_color: e.target.value }))}>
             {BG_COLORS.map(opt => <option key={opt.color} value={opt.color}>{opt.name}</option>)}
           </select>
-          {/* 推薦碼 */}
           <input type="text" className="border p-2 rounded w-full" value={form.referrer}
             maxLength={30} onChange={e => setForm(f => ({ ...f, referrer: e.target.value }))}
             placeholder="推薦碼（如果朋友給你的話）" />
-          {/* 圖片上傳 */}
+
+          {/* 圖片上傳 & 預覽（正面） */}
           <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => handleFileChange(e, "front")} />
-          {previewFront && (<img src={previewFront} alt="預覽正面" className="w-32 mb-2"/>)}
+          {previewFront && (
+            <div className="mt-2 flex justify-center">
+              <img
+                src={previewFront}
+                alt="預覽正面"
+                className="w-32 rounded shadow hover:shadow-lg transition"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+          )}
+
+          {/* 圖片上傳 & 預覽（背面） */}
           <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => handleFileChange(e, "back")} />
-          {previewBack && (<img src={previewBack} alt="預覽背面" className="w-32 mb-2"/>)}
+          {previewBack && (
+            <div className="mt-2 flex justify-center">
+              <img
+                src={previewBack}
+                alt="預覽背面"
+                className="w-32 rounded shadow hover:shadow-lg transition"
+                style={{ objectFit: "contain" }}
+              />
+            </div>
+          )}
+
           <button type="button" disabled={loading}
             className="w-full py-3 mt-6 rounded bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition"
             onClick={handlePreview}>名片預覽</button>
