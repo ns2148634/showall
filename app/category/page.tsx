@@ -131,20 +131,21 @@ export default function CategoryPage() {
         {/* 有條件時才出現 cards 列表 */}
         {hasCondition &&
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
-            {cards.map(card => (
-              <Link key={card.id} href={`/card/${card.url_slug}`}>
-                <div className="bg-white rounded shadow flex flex-col items-center p-4 hover:shadow-md">
-                  <img src={card.image_url_front} alt={card.name} className="w-24 h-24 object-cover rounded mb-2" />
-                  <div className="font-bold text-blue-900">{card.name}</div>
-                  <div className="text-gray-500">{card.job}</div>
-                  <div className="text-xs text-gray-400">{card.company}</div>
-                  <div className="text-xs text-gray-400">
-                    {card.citys}{card.area && "・" + card.area}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
+  {cards.map(card => (
+    <Link key={card.id} href={`/card/${card.url_slug}`}>
+      {/* 移除 bg-white、p-*，僅保留 shadow/rounded/hover */}
+      <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center">
+        <img src={card.image_url_front} alt={card.name} className="w-24 h-24 object-cover rounded mb-2" />
+        {/* 下面如有要顯示名片內容再加 */}
+        <div className="font-bold text-blue-900">{card.name}</div>
+        <div className="text-gray-500">{card.job}</div>
+        <div className="text-xs text-gray-400">{card.company}</div>
+        <div className="text-xs text-gray-400">{card.citys}{card.area && "・" + card.area}</div>
+      </div>
+    </Link>
+  ))}
+</div>
+
         }
       </main>
     </div>
