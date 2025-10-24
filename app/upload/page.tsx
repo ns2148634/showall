@@ -44,8 +44,7 @@ function UploadCardPageInner() {
     { color: "#EBFAE0", name: "淺綠" },
     { color: "#FFE5E5", name: "淺紅" },
     { color: "#F4F4F5", name: "淺灰" },
-    { color: "#F3E8FF", name: "淺紫" }
-  ];
+      ];
 
   useEffect(() => {
     const ref = searchParams.get("referrer");
