@@ -56,27 +56,31 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* 最新推薦名片 */}
         <h3 className="text-lg font-bold mb-6 text-gray-700">最新推薦名片</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
           {cards.length > 0 ? (
             cards.map((card) => (
               <Link href={`/card/${card.url_slug}`} key={card.id} className="block">
-                <div className="rounded shadow hover:shadow-lg transition text-center p-0">
-                  <Image
-                    src={card.image_url_front}
-                    alt="名片正面"
-                    width={180}
-                    height={110}
-                    className="mx-auto rounded object-cover"
-                  />
-                </div>
+                <Image
+                  src={card.image_url_front}
+                  alt="名片正面"
+                  width={180}
+                  height={110}
+                  className="mx-auto object-cover rounded"
+                  style={{
+                    boxShadow: "none",
+                    borderRadius: "10px",
+                    background: "#fff",
+                    maxHeight: 140,
+                  }}
+                />
               </Link>
             ))
           ) : (
-            <div className="col-span-3 text-center text-gray-400">暫無資料</div>
+            <div className="col-span-full text-center text-gray-400 py-12">暫無名片</div>
           )}
         </div>
+
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
         &copy; 2025 SHOWALL 百業名片網

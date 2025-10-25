@@ -164,7 +164,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
           onClick={handleShare}
           className="w-full py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition"
         >
-          立即邀請朋友
+          我也要上傳
         </button>
       </div>
 
