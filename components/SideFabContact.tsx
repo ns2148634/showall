@@ -36,9 +36,8 @@ export default function SideFabContact() {
       {/* 彈出modal內容同前一組可複用 */}
       {isOpen && (
         <div
-          className={`fixed z-50 inset-0 bg-black/50 transition-all flex ${
-            isMobile ? "items-end" : "items-center"
-          } justify-center`}
+          className={`fixed z-50 inset-0 bg-black/50 transition-all flex ${isMobile ? "items-end" : "items-center"
+            } justify-center`}
           onClick={() => setIsOpen(false)}
         >
           <div
@@ -81,7 +80,7 @@ export default function SideFabContact() {
               </li>
             </ul>
             <button
-              className="block mx-auto mt-1 text-gray-400 hover:text-blue-800 text-sm"
+              className="block mx-auto mt-1 bg-yellow-400 text-white hover:text-blue-800 text-sm"
               onClick={() => setIsOpen(false)}
             >
               關閉

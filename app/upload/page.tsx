@@ -411,23 +411,7 @@ function UploadCardPageInner() {
             </p>
           </div>
           {/* 推薦碼欄位 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              推薦碼（選填）
-            </label>
-            <input
-              type="text"
-              className="border p-2 rounded w-full bg-gray-50"
-              value={form.referrer}
-              onChange={e => setForm(f => ({ ...f, referrer: e.target.value }))}
-              placeholder="如有推薦人請填入推薦碼"
-              maxLength={50}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              從朋友連結進來會自動填入，推薦人可獲 50 元回饋
-            </p>
-          </div>
-
+          
           <button
             type="button"
             disabled={loading}
