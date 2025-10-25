@@ -181,69 +181,100 @@ export default function PreviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10">
-      <main className="max-w-2xl mx-auto">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-center mb-6">名片預覽</h2>
-
-          {/* 預覽區域 */}
-          <div
-            className="border rounded-lg p-6 mb-6"
-            style={{ backgroundColor: form.theme_color || "#FFFFFF" }}
-          >
-            {previewFront && (
-              <div className="mb-4">
-                <p className="text-sm font-medium text-gray-700 mb-2">名片正面</p>
-                <img src={previewFront} alt="正面" className="w-full max-w-md mx-auto rounded shadow" />
-              </div>
-            )}
-            {previewBack && (
-              <div>
-                <p className="text-sm font-medium text-gray-700 mb-2">名片背面</p>
-                <img src={previewBack} alt="背面" className="w-full max-w-md mx-auto rounded shadow" />
-              </div>
-            )}
-
-            {/* 顯示表單資料 */}
-            <div className="mt-6 space-y-2 text-sm text-gray-700">
-              {form.name && <p><strong>姓名：</strong>{form.name}</p>}
-              {form.company && <p><strong>公司：</strong>{form.company}</p>}
-              {form.email && <p><strong>電子信箱：</strong>{form.email}</p>}
-              {form.mobile && <p><strong>手機：</strong>{form.mobile}</p>}
-              {form.line && <p><strong>LINE：</strong>{form.line}</p>}
-              {form.contact_other && <p><strong>其他聯絡：</strong>{form.contact_other}</p>}
-              {form.citys && <p><strong>地區：</strong>{form.citys} {form.area !== "全部" && form.area}</p>}
-              {form.tag1 && <p><strong>經營項目：</strong>{form.tag1} {form.tag2} {form.tag3} {form.tag4}</p>}
-              {form.intro && <p><strong>簡介：</strong>{form.intro}</p>}
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8 px-4">
+      <div
+        className="rounded-lg shadow-2xl p-6 w-full max-w-md mx-auto border border-gray-200"
+        style={{ background: form?.theme_color || "#fff" }}
+      >
+        {/* 名片圖片區 */}
+        <div className="space-y-4 mb-6">
+          {previewFront && (
+            <div>
+              <div className="font-bold mb-2 text-gray-700">名片正面</div>
+              <img
+                src={previewFront}
+                alt="名片正面"
+                className="rounded shadow w-full object-contain"
+                style={{ maxHeight: 300, background: "#fff" }}
+              />
             </div>
-          </div>
-
-          {/* 按鈕區 */}
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="flex-1 py-3 rounded bg-gray-500 text-white text-lg font-bold hover:bg-gray-600 transition"
-            >
-              返回修改
-            </button>
-            <button
-              type="button"
-              onClick={handlePublish}
-              disabled={loading}
-              className="flex-1 py-3 rounded bg-green-600 text-white text-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
-            >
-              {loading ? "上架中..." : "確認上架"}
-            </button>
-          </div>
-
-          {msg && (
-            <div className="mt-4 text-center font-bold text-red-500">
-              {msg}
+          )}
+          {previewBack && (
+            <div>
+              <div className="font-bold mb-2 text-gray-700">名片背面</div>
+              <img
+                src={previewBack}
+                alt="名片背面"
+                className="rounded shadow w-full object-contain"
+                style={{ maxHeight: 300, background: "#fff" }}
+              />
             </div>
           )}
         </div>
-      </main>
+
+        {/* 基本資訊區 */}
+        <div className="space-y-3 mb-6">
+          <div className="text-xl font-bold text-gray-800">{form?.name}</div>
+          {form?.company && <div className="text-gray-600"><strong>公司：</strong>{form.company}</div>}
+          <div className="text-gray-600"><strong>Email：</strong>{form?.email}</div>
+          {(form?.citys || form?.area) && (
+            <div className="text-gray-600">
+              <strong>地區：</strong>
+              {form?.citys} {form?.area && form?.area !== "全部" && `・${form.area}`}
+            </div>
+          )}
+          {form?.line && <div className="text-gray-600"><strong>LINE：</strong>{form.line}</div>}
+          {form?.mobile && <div className="text-gray-600"><strong>手機：</strong>{form.mobile}</div>}
+          {form?.contact_other && <div className="text-gray-600"><strong>其他聯絡：</strong>{form.contact_other}</div>}
+        </div>
+
+        {/* 標籤區 */}
+        {(form?.tag1 || form?.tag2 || form?.tag3 || form?.tag4) && (
+          <div className="mb-6">
+            <div className="font-bold text-gray-700 mb-2">經營項目</div>
+            <div className="flex flex-wrap gap-2">
+              {form?.tag1 && <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-sm">{form.tag1}</span>}
+              {form?.tag2 && <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm">{form.tag2}</span>}
+              {form?.tag3 && <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-sm">{form.tag3}</span>}
+              {form?.tag4 && <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm">{form.tag4}</span>}
+            </div>
+          </div>
+        )}
+
+        {/* 簡介區 */}
+        {form?.intro && (
+          <div className="mb-6">
+            <div className="font-bold text-gray-700 mb-2">關於我</div>
+            <p className="text-gray-600 whitespace-pre-wrap">{form.intro}</p>
+          </div>
+        )}
+
+        {/* 按鈕區 */}
+        <div className="flex gap-4">
+          <button
+            type="button"
+            onClick={handleBack}
+            className="flex-1 py-3 rounded bg-gray-500 text-white text-lg font-bold hover:bg-gray-600 transition"
+          >
+            返回修改
+          </button>
+          <button
+            type="button"
+            onClick={handlePublish}
+            disabled={loading}
+            className="flex-1 py-3 rounded bg-green-600 text-white text-lg font-bold hover:bg-green-700 transition disabled:opacity-50"
+          >
+            {loading ? "上架中..." : "確認上架"}
+          </button>
+        </div>
+        {/* 提示訊息 */}
+        {msg && (
+          <div className="mt-4 text-center font-bold text-red-500">
+            {msg}
+          </div>
+        )}
+      </div>
     </div>
+
   );
 }

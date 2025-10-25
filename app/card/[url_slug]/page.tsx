@@ -76,6 +76,31 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         className="rounded-lg shadow-2xl p-6 w-full max-w-md mx-auto border border-gray-200"
         style={{ background: card.theme_color || "#fff" }}
       >
+        {/* 名片圖片 */}
+        <div className="space-y-4 mb-6">
+          {card.image_url_front && (
+            <div>
+              <div className="font-bold mb-2 text-gray-700">名片正面</div>
+              <img
+                src={card.image_url_front}
+                alt="名片正面"
+                className="rounded shadow w-full object-contain"
+                style={{ maxHeight: 300, background: "#fff" }}
+              />
+            </div>
+          )}
+          {card.image_url_back && (
+            <div>
+              <div className="font-bold mb-2 text-gray-700">名片背面</div>
+              <img
+                src={card.image_url_back}
+                alt="名片背面"
+                className="rounded shadow w-full object-contain"
+                style={{ maxHeight: 300, background: "#fff" }}
+              />
+            </div>
+          )}
+        </div>
         {/* 基本資訊 */}
         <div className="space-y-3 mb-6">
           <div className="text-xl font-bold text-gray-800">{card.name}</div>
@@ -113,31 +138,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
           </div>
         )}
 
-        {/* 名片圖片 */}
-        <div className="space-y-4 mb-6">
-          {card.image_url_front && (
-            <div>
-              <div className="font-bold mb-2 text-gray-700">名片正面</div>
-              <img
-                src={card.image_url_front}
-                alt="名片正面"
-                className="rounded shadow w-full object-contain"
-                style={{ maxHeight: 300, background: "#fff" }}
-              />
-            </div>
-          )}
-          {card.image_url_back && (
-            <div>
-              <div className="font-bold mb-2 text-gray-700">名片背面</div>
-              <img
-                src={card.image_url_back}
-                alt="名片背面"
-                className="rounded shadow w-full object-contain"
-                style={{ maxHeight: 300, background: "#fff" }}
-              />
-            </div>
-          )}
-        </div>
+
       </div>
 
       {/* 推薦邀請區塊 */}
