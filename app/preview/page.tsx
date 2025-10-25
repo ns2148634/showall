@@ -43,29 +43,37 @@ export default function PreviewPage() {
       const frontBlob = await fetch(previewFront).then(r => r.blob());
       const frontFileName = `${Date.now()}-front.jpg`;
       const { data: frontUpload, error: frontError } = await supabase.storage
-        .from('cards')
+        .from('card-images')
         .upload(frontFileName, frontBlob, { contentType: 'image/jpeg' });
 
       if (frontError) throw new Error("正面圖片上傳失敗：" + frontError.message);
 
-      const frontUrl = supabase.storage.from('cards').getPublicUrl(frontFileName).data.publicUrl;
+      const frontUrl = supabase.storage
+        .from('card-images')
+        .getPublicUrl(frontFileName).data.publicUrl;
 
       let backUrl = "";
       if (previewBack) {
         const backBlob = await fetch(previewBack).then(r => r.blob());
         const backFileName = `${Date.now()}-back.jpg`;
         const { data: backUpload, error: backError } = await supabase.storage
-          .from('cards')
+          .from('card-images')
           .upload(backFileName, backBlob, { contentType: 'image/jpeg' });
 
         if (backError) throw new Error("背面圖片上傳失敗：" + backError.message);
-        backUrl = supabase.storage.from('cards').getPublicUrl(backFileName).data.publicUrl;
+
+        backUrl = supabase.storage
+          .from('card-images')
+          .getPublicUrl(backFileName).data.publicUrl;
       }
 
       // 2. 生成 url_slug
       const urlSlug = genSlug(form.name || form.email);
 
-      // 3. 寫入 cards table
+      // 3. 定義 cardUrl（在這裡定義！）
+      const cardUrl = `https://www.showall.tw/card/${urlSlug}`;
+
+      // 4. 寫入 cards table
       const cardData = {
         email: form.email,
         name: form.name || "",
@@ -84,7 +92,7 @@ export default function PreviewPage() {
         image_url_front: frontUrl,
         image_url_back: backUrl,
         url_slug: urlSlug,
-        published: false,  // 預設未發佈，付款後改為 true
+        published: false,
         referrer: form.referrer || null
       };
 
@@ -96,9 +104,19 @@ export default function PreviewPage() {
       if (insertError) throw new Error("資料寫入失敗：" + insertError.message);
 
       const cardId = insertData[0].id;
-      const cardUrl = `https://www.showall.tw/card/${urlSlug}`;
 
-      // 4. 寄信給用戶
+      // 5. 如果有推薦人，記錄到 referrals table
+      if (form.referrer && form.referrer.trim()) {
+        await supabase.from('referrals').insert([{
+          referrer_slug: form.referrer.trim(),
+          referee_email: form.email,
+          referee_card_id: cardId,
+          status: 'pending',
+          reward_amount: 50
+        }]);
+      }
+
+      // 6. 寄信給用戶（現在 cardUrl 已經定義了）
       await fetch("/api/sendMail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -106,38 +124,38 @@ export default function PreviewPage() {
           to: form.email,
           subject: "您的 SHOWALL 專屬名片網址已建立",
           html: `
-            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-              <h2 style="color: #2563eb;">您好！</h2>
-              <p>您已成功建立 <strong>SHOWALL 專屬名片網址</strong>：</p>
-              <p style="font-size: 18px;">
-                <a href="${cardUrl}" style="color: #2563eb; text-decoration: none;">${cardUrl}</a>
-              </p>
-              <p>立即回到網站確認資料與付款，或分享此網址給朋友！</p>
-              <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
-              <h3 style="color: #16a34a;">邀請朋友註冊上傳名片</h3>
-              <p>成功推薦即享每人 <strong style="color: #dc2626;">50元回饋</strong>！</p>
-              <p style="margin-top: 20px;">
-                <a href="https://www.showall.tw/upload?referrer=${urlSlug}" 
-                   style="display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
-                  立即邀請朋友
-                </a>
-              </p>
-              <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
-              <p style="color: #6b7280; font-size: 12px;">
-                此為系統自動發送的郵件，請勿直接回覆。<br>
-                如有問題請聯繫客服：<a href="mailto:service@showall.tw">service@showall.tw</a>
-              </p>
-            </div>
-          `,
+          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+            <h2 style="color: #2563eb;">您好！</h2>
+            <p>您已成功建立 <strong>SHOWALL 專屬名片網址</strong>：</p>
+            <p style="font-size: 18px;">
+              <a href="${cardUrl}" style="color: #2563eb; text-decoration: none;">${cardUrl}</a>
+            </p>
+            <p>立即回到網站確認資料與付款，或分享此網址給朋友！</p>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
+            <h3 style="color: #16a34a;">邀請朋友註冊上傳名片</h3>
+            <p>成功推薦即享每人 <strong style="color: #dc2626;">50元回饋</strong>！</p>
+            <p style="margin-top: 20px;">
+              <a href="https://www.showall.tw/upload?referrer=${urlSlug}" 
+                 style="display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
+                立即邀請朋友
+              </a>
+            </p>
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
+            <p style="color: #6b7280; font-size: 12px;">
+              此為系統自動發送的郵件，請勿直接回覆。<br>
+              如有問題請聯繫客服：<a href="mailto:service@showall.tw">service@showall.tw</a>
+            </p>
+          </div>
+        `,
         }),
       });
 
-      // 5. 清除 sessionStorage
+      // 7. 清除 sessionStorage
       window.sessionStorage.removeItem("previewForm");
       window.sessionStorage.removeItem("previewFront");
       window.sessionStorage.removeItem("previewBack");
 
-      // 6. 導向付款頁
+      // 8. 導向付款頁
       router.push(`/payment?card_id=${cardId}`);
 
     } catch (err: any) {
@@ -146,6 +164,7 @@ export default function PreviewPage() {
       setLoading(false);
     }
   }
+
 
   function handleBack() {
     router.push("/upload");
@@ -168,8 +187,8 @@ export default function PreviewPage() {
           <h2 className="text-2xl font-bold text-center mb-6">名片預覽</h2>
 
           {/* 預覽區域 */}
-          <div 
-            className="border rounded-lg p-6 mb-6" 
+          <div
+            className="border rounded-lg p-6 mb-6"
             style={{ backgroundColor: form.theme_color || "#FFFFFF" }}
           >
             {previewFront && (

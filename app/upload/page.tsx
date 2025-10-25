@@ -44,7 +44,7 @@ function UploadCardPageInner() {
     { color: "#EBFAE0", name: "淺綠" },
     { color: "#FFE5E5", name: "淺紅" },
     { color: "#F4F4F5", name: "淺灰" },
-      ];
+  ];
 
   useEffect(() => {
     const ref = searchParams.get("referrer");
@@ -336,8 +336,8 @@ function UploadCardPageInner() {
                   type="button"
                   onClick={() => setForm(f => ({ ...f, theme_color: opt.color }))}
                   className={`w-16 h-16 rounded-lg border-2 transition-all hover:scale-110 ${form.theme_color === opt.color
-                      ? "border-blue-600 ring-2 ring-blue-300"
-                      : "border-gray-300"
+                    ? "border-blue-600 ring-2 ring-blue-300"
+                    : "border-gray-300"
                     }`}
                   style={{ backgroundColor: opt.color }}
                   title={opt.name}
@@ -392,6 +392,40 @@ function UploadCardPageInner() {
                 />
               </div>
             )}
+          </div>
+          {/* 推薦碼欄位 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              推薦碼（選填）
+            </label>
+            <input
+              type="text"
+              className="border p-2 rounded w-full bg-gray-50"
+              value={form.referrer}
+              onChange={e => setForm(f => ({ ...f, referrer: e.target.value }))}
+              placeholder="如有推薦人請填入推薦碼"
+              maxLength={50}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              從朋友連結進來會自動填入，推薦人可獲 50 元回饋
+            </p>
+          </div>
+          {/* 推薦碼欄位 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              推薦碼（選填）
+            </label>
+            <input
+              type="text"
+              className="border p-2 rounded w-full bg-gray-50"
+              value={form.referrer}
+              onChange={e => setForm(f => ({ ...f, referrer: e.target.value }))}
+              placeholder="如有推薦人請填入推薦碼"
+              maxLength={50}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              從朋友連結進來會自動填入，推薦人可獲 50 元回饋
+            </p>
           </div>
 
           <button

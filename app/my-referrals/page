@@ -1,0 +1,125 @@
+"use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabaseClient";
+
+type Referral = {
+  id: number;
+  referrer_slug: string;
+  referee_email: string;
+  referee_card_id: number;
+  status: string;
+  reward_amount: number;
+  created_at: string;
+};
+
+export default function MyReferralsPage() {
+  const router = useRouter();
+  const [userSlug, setUserSlug] = useState("");
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // 從 URL 或 localStorage 取得用戶的 url_slug
+    const slug = new URLSearchParams(window.location.search).get('slug');
+    if (!slug) {
+      alert('請從您的專屬名片頁進入');
+      router.push('/');
+      return;
+    }
+    setUserSlug(slug);
+    fetchReferrals(slug);
+  }, []);
+
+  async function fetchReferrals(slug: string) {
+    setLoading(true);
+    const { data } = await supabase
+      .from('referrals')
+      .select('*')
+      .eq('referrer_slug', slug)
+      .order('created_at', { ascending: false });
+    
+    setReferrals(data || []);
+    setLoading(false);
+  }
+
+  const completedCount = referrals.filter(r => r.status === 'completed').length;
+  const pendingCount = referrals.filter(r => r.status === 'pending').length;
+  const totalReward = completedCount * 50;
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">載入中...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 py-10 px-4">
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-center">我的推薦統計</h1>
+
+        {/* 統計卡片 */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          <div className="bg-white rounded-lg shadow p-6 text-center">
+            <div className="text-3xl font-bold text-blue-600">{referrals.length}</div>
+            <div className="text-gray-600 mt-2">總推薦人數</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 text-center">
+            <div className="text-3xl font-bold text-green-600">{completedCount}</div>
+            <div className="text-gray-600 mt-2">已完成推薦</div>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 text-center">
+            <div className="text-3xl font-bold text-yellow-600">{totalReward} 元</div>
+            <div className="text-gray-600 mt-2">累積獎勵金額</div>
+          </div>
+        </div>
+
+        {/* 推薦列表 */}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold mb-4">推薦記錄</h2>
+          
+          {referrals.length === 0 ? (
+            <div className="text-center text-gray-500 py-10">
+              尚未有推薦記錄
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {referrals.map(ref => (
+                <div key={ref.id} className="border rounded p-4 flex justify-between items-center">
+                  <div>
+                    <div className="font-medium">{ref.referee_email}</div>
+                    <div className="text-sm text-gray-500">
+                      {new Date(ref.created_at).toLocaleDateString('zh-TW')}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-bold">{ref.reward_amount} 元</div>
+                    <div className={`text-sm ${
+                      ref.status === 'completed' ? 'text-green-600' :
+                      ref.status === 'pending' ? 'text-yellow-600' : 'text-gray-500'
+                    }`}>
+                      {ref.status === 'completed' ? '✅ 已完成' :
+                       ref.status === 'pending' ? '⏳ 待審核' : '❌ 已取消'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* 待發放獎勵 */}
+        {pendingCount > 0 && (
+          <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div className="font-bold text-yellow-800 mb-1">⏳ 待審核推薦</div>
+            <div className="text-yellow-700 text-sm">
+              目前有 {pendingCount} 筆推薦待審核，審核通過後將累計獎勵金額
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

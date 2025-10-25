@@ -6,7 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 type Card = {
   id: number;
   name: string;
-  company: string;
+  company?: string;
   email: string;
   line?: string;
   mobile?: string;
@@ -17,7 +17,6 @@ type Card = {
   image_url_front?: string;
   image_url_back?: string;
   url_slug: string;
-  referral_code?: string;
   theme_color?: string;
   tag1?: string;
   tag2?: string;
@@ -37,106 +36,156 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         .eq("url_slug", params.url_slug)
         .eq("published", true)
         .single();
-      if (error || !data) setMsg("查無此名片");
+
+      if (error || !data) {
+        setMsg("查無此名片或尚未發佈");
+        return;
+      }
       setCard(data);
     }
     fetchCard();
   }, [params.url_slug]);
 
-  if (msg) return <div className="text-center mt-12 text-red-500 font-bold">{msg}</div>;
-  if (!card) return <div className="text-center mt-12 text-gray-400">載入中...</div>;
+  if (msg) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center text-red-500 font-bold">{msg}</div>
+    </div>
+  );
+
+  if (!card) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center text-gray-400">載入中...</div>
+    </div>
+  );
+
+  const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/upload?referrer=${card.url_slug}`;
 
   function handleShare() {
-    if (!card) return;
-    const url = `${window.location.origin}/upload?referrer=${card.referral_code || card.url_slug}`;
-    window.open(url, "_blank");
+    window.open(referralUrl, "_blank");
   }
+
   function copyUrl() {
-    if (!card) return;
-    navigator.clipboard.writeText(
-      `${window.location.origin}/upload?referrer=${card.referral_code || card.url_slug}`
-    );
-    setMsg("已複製上傳連結，可分享給朋友！");
-    setTimeout(() => setMsg(""), 1800);
+    navigator.clipboard.writeText(referralUrl);
+    setMsg("✅ 已複製推薦連結！分享給朋友即可獲得 50 元回饋");
+    setTimeout(() => setMsg(""), 3000);
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8">
+    <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8 px-4">
       <div
-        className="rounded-lg shadow-2xl p-8 w-full max-w-md mx-auto border border-gray-200"
+        className="rounded-lg shadow-2xl p-6 w-full max-w-md mx-auto border border-gray-200"
         style={{ background: card.theme_color || "#fff" }}
       >
-        <div className="mb-2 text-lg">
-          <strong>姓名：</strong>{card.name}
+        {/* 基本資訊 */}
+        <div className="space-y-3 mb-6">
+          <div className="text-xl font-bold text-gray-800">{card.name}</div>
+          {card.company && <div className="text-gray-600"><strong>公司：</strong>{card.company}</div>}
+          <div className="text-gray-600"><strong>Email：</strong>{card.email}</div>
+          {(card.citys || card.area) && (
+            <div className="text-gray-600">
+              <strong>地區：</strong>
+              {card.citys} {card.area && card.area !== "全部" && `・${card.area}`}
+            </div>
+          )}
+          {card.line && <div className="text-gray-600"><strong>LINE：</strong>{card.line}</div>}
+          {card.mobile && <div className="text-gray-600"><strong>手機：</strong>{card.mobile}</div>}
+          {card.contact_other && <div className="text-gray-600"><strong>其他聯絡：</strong>{card.contact_other}</div>}
         </div>
-        <div className="mb-2 text-lg">
-          <strong>公司：</strong>{card.company}
-        </div>
-        <div className="mb-2 text-lg">
-          <strong>Email：</strong>{card.email}
-        </div>
-        <div className="mb-2 text-lg">
-          <strong>地區：</strong>
-          <span className="mr-1">{card.citys}</span>
-          <span>{card.area}</span>
-        </div>
-        <div className="mb-2"><strong>Line：</strong>{card.line}</div>
-        <div className="mb-2"><strong>手機：</strong>{card.mobile}</div>
-        <div className="mb-2"><strong>其他聯絡：</strong>{card.contact_other}</div>
-        {/* tag 關鍵字顯示 */}
-        <div className="mb-2 flex flex-wrap gap-2">
-          <strong className="w-full">關鍵字：</strong>
-          {card.tag1 && <span className="px-2 py-1 rounded bg-cyan-100 text-cyan-700 text-sm">{card.tag1}</span>}
-          {card.tag2 && <span className="px-2 py-1 rounded bg-blue-100 text-blue-700 text-sm">{card.tag2}</span>}
-          {card.tag3 && <span className="px-2 py-1 rounded bg-teal-100 text-teal-700 text-sm">{card.tag3}</span>}
-          {card.tag4 && <span className="px-2 py-1 rounded bg-indigo-100 text-indigo-700 text-sm">{card.tag4}</span>}
-        </div>
-        <div className="mb-2"><strong>自我簡介：</strong>{card.intro}</div>
-        {/* 圖片顯示 */}
-        <div className="flex flex-col gap-4 my-6">
-          <div>
-            <div className="font-bold mb-1 text-gray-600">正面</div>
-            {card.image_url_front && (
+
+        {/* 關鍵字標籤 */}
+        {(card.tag1 || card.tag2 || card.tag3 || card.tag4) && (
+          <div className="mb-6">
+            <div className="font-bold text-gray-700 mb-2">經營項目</div>
+            <div className="flex flex-wrap gap-2">
+              {card.tag1 && <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-sm">{card.tag1}</span>}
+              {card.tag2 && <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm">{card.tag2}</span>}
+              {card.tag3 && <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-sm">{card.tag3}</span>}
+              {card.tag4 && <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm">{card.tag4}</span>}
+            </div>
+          </div>
+        )}
+
+        {/* 自我簡介 */}
+        {card.intro && (
+          <div className="mb-6">
+            <div className="font-bold text-gray-700 mb-2">關於我</div>
+            <p className="text-gray-600 whitespace-pre-wrap">{card.intro}</p>
+          </div>
+        )}
+
+        {/* 名片圖片 */}
+        <div className="space-y-4 mb-6">
+          {card.image_url_front && (
+            <div>
+              <div className="font-bold mb-2 text-gray-700">名片正面</div>
               <img
                 src={card.image_url_front}
                 alt="名片正面"
                 className="rounded shadow w-full object-contain"
-                style={{ maxHeight: 240, background: "#fff" }}
+                style={{ maxHeight: 300, background: "#fff" }}
               />
-            )}
-          </div>
-          <div>
-            <div className="font-bold mb-1 text-gray-600">背面</div>
-            {card.image_url_back && (
+            </div>
+          )}
+          {card.image_url_back && (
+            <div>
+              <div className="font-bold mb-2 text-gray-700">名片背面</div>
               <img
                 src={card.image_url_back}
                 alt="名片背面"
                 className="rounded shadow w-full object-contain"
-                style={{ maxHeight: 240, background: "#fff" }}
+                style={{ maxHeight: 300, background: "#fff" }}
               />
-            )}
-          </div>
+            </div>
+          )}
         </div>
-        {/* 分享按鈕 */}
-        <div className="flex gap-4 my-6 justify-center">
-          <button
-            className="px-5 py-2 rounded bg-pink-500 text-white hover:bg-pink-700 font-bold"
-            onClick={handleShare}
-          >
-            我也要上傳名片
-          </button>
-          <button
-            className="px-5 py-2 rounded bg-blue-600 text-white hover:bg-blue-800 font-bold"
-            onClick={copyUrl}
-          >
-            複製推薦網址
-          </button>
-        </div>
-        {msg && <div className="text-center font-bold text-green-700">{msg}</div>}
       </div>
-      <Link href="/" className="mt-8 text-blue-600 hover:underline">
+
+      {/* 推薦邀請區塊 */}
+      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-5 mt-6 w-full max-w-md">
+        <h3 className="font-bold text-blue-900 text-lg mb-2">💰 邀請朋友上傳名片</h3>
+        <p className="text-gray-700 text-sm mb-4">
+          分享此連結邀請朋友註冊，成功推薦一人即可獲得 <strong className="text-red-600">50元回饋</strong>！
+        </p>
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={referralUrl}
+            readOnly
+            className="flex-1 border rounded px-3 py-2 text-sm bg-white text-gray-600"
+          />
+          <button
+            onClick={copyUrl}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold whitespace-nowrap"
+          >
+            複製連結
+          </button>
+        </div>
+        <button
+          onClick={handleShare}
+          className="w-full py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition"
+        >
+          立即邀請朋友
+        </button>
+      </div>
+
+      {/* 提示訊息 */}
+      {msg && (
+        <div className="mt-4 text-center font-bold text-green-700 bg-green-100 px-4 py-2 rounded">
+          {msg}
+        </div>
+      )}
+
+      {/* 返回首頁 */}
+      <Link href="/" className="mt-8 text-blue-600 hover:underline font-medium">
         ⬅️ 回首頁
       </Link>
+      <Link
+        href={`/my-referrals?slug=${card.url_slug}`}
+        className="block w-full text-center py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium mt-3"
+      >
+        📊 查看我的推薦統計
+      </Link>
+
     </div>
   );
 }
