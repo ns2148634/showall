@@ -145,22 +145,15 @@ function PaymentPageInner() {
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-lg mx-auto bg-white rounded-xl shadow-lg p-8 flex flex-col gap-5">
         <h2 className="text-2xl font-bold text-blue-800 text-center mb-2">
-          讓更多人找到你，上架一年只要 100 元！
+          馬上打開你的人脈網！
         </h2>
-
-        {cardId && (
-          <div className="text-sm text-gray-500 text-center">
-            名片 ID：{cardId}
-          </div>
-        )}
 
         <div className="flex gap-3 justify-center mb-3">
           <button
-            className={`py-2 px-6 rounded-lg font-bold border ${
-              method === "opay"
+            className={`py-2 px-6 rounded-lg font-bold border ${method === "opay"
                 ? "bg-blue-300 border-blue-500 text-white"
                 : "bg-gray-200 border-gray-400 text-gray-700"
-            }`}
+              }`}
             onClick={() => setMethod("opay")}
             disabled
             title="尚未開放"
@@ -168,11 +161,10 @@ function PaymentPageInner() {
             線上付款（即將開放）
           </button>
           <button
-            className={`py-2 px-6 rounded-lg font-bold border ${
-              method === "bank"
+            className={`py-2 px-6 rounded-lg font-bold border ${method === "bank"
                 ? "bg-green-500 border-green-700 text-white"
                 : "bg-gray-200 border-gray-400 text-gray-700"
-            }`}
+              }`}
             onClick={() => setMethod("bank")}
           >
             銀行匯款
@@ -278,9 +270,8 @@ function PaymentPageInner() {
 
             {msg && (
               <div
-                className={`text-center mt-2 font-bold ${
-                  submitted ? "text-green-600" : "text-red-500"
-                }`}
+                className={`text-center mt-2 font-bold ${submitted ? "text-green-600" : "text-red-500"
+                  }`}
               >
                 {msg}
               </div>
