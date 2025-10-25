@@ -3,6 +3,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+// 生成唯一 url_slug
+function genSlug(name: string): string {
+  const base = encodeURIComponent((name || "user").trim().substring(0, 20));
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 6);
+  return `${base}-${timestamp}${random}`;
+}
+
 export default function PreviewPage() {
   const router = useRouter();
   const [form, setForm] = useState<any>(null);
@@ -31,23 +39,115 @@ export default function PreviewPage() {
     setMsg("");
 
     try {
-      // 這裡加上實際上架邏輯（上傳圖片到 storage、寫入 cards table）
-      // 範例省略，你可以根據需求補充
+      // 1. 上傳圖片到 Supabase Storage
+      const frontBlob = await fetch(previewFront).then(r => r.blob());
+      const frontFileName = `${Date.now()}-front.jpg`;
+      const { data: frontUpload, error: frontError } = await supabase.storage
+        .from('cards')
+        .upload(frontFileName, frontBlob, { contentType: 'image/jpeg' });
 
-      setMsg("上架成功！");
-      setTimeout(() => {
-        router.push("/"); // 或導向其他頁面
-      }, 1500);
-    } catch (err) {
+      if (frontError) throw new Error("正面圖片上傳失敗：" + frontError.message);
+
+      const frontUrl = supabase.storage.from('cards').getPublicUrl(frontFileName).data.publicUrl;
+
+      let backUrl = "";
+      if (previewBack) {
+        const backBlob = await fetch(previewBack).then(r => r.blob());
+        const backFileName = `${Date.now()}-back.jpg`;
+        const { data: backUpload, error: backError } = await supabase.storage
+          .from('cards')
+          .upload(backFileName, backBlob, { contentType: 'image/jpeg' });
+
+        if (backError) throw new Error("背面圖片上傳失敗：" + backError.message);
+        backUrl = supabase.storage.from('cards').getPublicUrl(backFileName).data.publicUrl;
+      }
+
+      // 2. 生成 url_slug
+      const urlSlug = genSlug(form.name || form.email);
+
+      // 3. 寫入 cards table
+      const cardData = {
+        email: form.email,
+        name: form.name || "",
+        company: form.company || "",
+        citys: form.citys || "",
+        area: form.area || "",
+        line: form.line || "",
+        mobile: form.mobile || "",
+        contact_other: form.contact_other || "",
+        tag1: form.tag1 || "",
+        tag2: form.tag2 || "",
+        tag3: form.tag3 || "",
+        tag4: form.tag4 || "",
+        intro: form.intro || "",
+        theme_color: form.theme_color || "#FFFFFF",
+        image_url_front: frontUrl,
+        image_url_back: backUrl,
+        url_slug: urlSlug,
+        published: false,  // 預設未發佈，付款後改為 true
+        referrer: form.referrer || null
+      };
+
+      const { data: insertData, error: insertError } = await supabase
+        .from('cards')
+        .insert([cardData])
+        .select();
+
+      if (insertError) throw new Error("資料寫入失敗：" + insertError.message);
+
+      const cardId = insertData[0].id;
+      const cardUrl = `https://www.showall.tw/card/${urlSlug}`;
+
+      // 4. 寄信給用戶
+      await fetch("/api/sendMail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: form.email,
+          subject: "您的 SHOWALL 專屬名片網址已建立",
+          html: `
+            <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+              <h2 style="color: #2563eb;">您好！</h2>
+              <p>您已成功建立 <strong>SHOWALL 專屬名片網址</strong>：</p>
+              <p style="font-size: 18px;">
+                <a href="${cardUrl}" style="color: #2563eb; text-decoration: none;">${cardUrl}</a>
+              </p>
+              <p>立即回到網站確認資料與付款，或分享此網址給朋友！</p>
+              <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
+              <h3 style="color: #16a34a;">邀請朋友註冊上傳名片</h3>
+              <p>成功推薦即享每人 <strong style="color: #dc2626;">50元回饋</strong>！</p>
+              <p style="margin-top: 20px;">
+                <a href="https://www.showall.tw/upload?referrer=${urlSlug}" 
+                   style="display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
+                  立即邀請朋友
+                </a>
+              </p>
+              <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
+              <p style="color: #6b7280; font-size: 12px;">
+                此為系統自動發送的郵件，請勿直接回覆。<br>
+                如有問題請聯繫客服：<a href="mailto:service@showall.tw">service@showall.tw</a>
+              </p>
+            </div>
+          `,
+        }),
+      });
+
+      // 5. 清除 sessionStorage
+      window.sessionStorage.removeItem("previewForm");
+      window.sessionStorage.removeItem("previewFront");
+      window.sessionStorage.removeItem("previewBack");
+
+      // 6. 導向付款頁
+      router.push(`/payment?card_id=${cardId}`);
+
+    } catch (err: any) {
       console.error(err);
-      setMsg("上架失敗，請稍後再試");
-    } finally {
+      setMsg(err.message || "上架失敗，請稍後再試");
       setLoading(false);
     }
   }
 
   function handleBack() {
-    // 返回 upload 頁，sessionStorage 保留資料
     router.push("/upload");
   }
 
@@ -89,7 +189,7 @@ export default function PreviewPage() {
             <div className="mt-6 space-y-2 text-sm text-gray-700">
               {form.name && <p><strong>姓名：</strong>{form.name}</p>}
               {form.company && <p><strong>公司：</strong>{form.company}</p>}
-              {form.email && <p><strong>電子信箱信箱：</strong>{form.email}</p>}
+              {form.email && <p><strong>電子信箱：</strong>{form.email}</p>}
               {form.mobile && <p><strong>手機：</strong>{form.mobile}</p>}
               {form.line && <p><strong>LINE：</strong>{form.line}</p>}
               {form.contact_other && <p><strong>其他聯絡：</strong>{form.contact_other}</p>}
@@ -119,7 +219,7 @@ export default function PreviewPage() {
           </div>
 
           {msg && (
-            <div className={`mt-4 text-center font-bold ${msg.includes('成功') ? "text-green-600" : "text-red-500"}`}>
+            <div className="mt-4 text-center font-bold text-red-500">
               {msg}
             </div>
           )}

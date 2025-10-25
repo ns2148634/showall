@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 const BANK_INFO = {
@@ -8,7 +9,10 @@ const BANK_INFO = {
   account: "0532979018399",
 };
 
-export default function PaymentPage() {
+function PaymentPageInner() {
+  const searchParams = useSearchParams();
+  const cardId = searchParams.get("card_id");  // ← 接收 card_id
+
   const [method, setMethod] = useState<"opay" | "bank">("bank");
   const [remit, setRemit] = useState<{
     email: string;
@@ -18,7 +22,7 @@ export default function PaymentPage() {
     receipt: null | File;
   }>({
     email: "",
-    amount: 100, // 預設 100 元
+    amount: 100,
     code: "",
     time: "",
     receipt: null,
@@ -79,6 +83,7 @@ export default function PaymentPage() {
     // 寫入 payments table
     const { error } = await supabase.from("payments").insert([
       {
+        card_id: cardId ? parseInt(cardId) : null,  // ← 加上 card_id
         email: remit.email,
         amount: remit.amount,
         method: "bank",
@@ -96,7 +101,7 @@ export default function PaymentPage() {
       setSubmitted(true);
       setMsg("匯款資料已提交！請靜待 1-2 個工作日審核。");
 
-      // ======== Email 通知「站長」 ========
+      // Email 通知站長
       await fetch("/api/sendMail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,14 +110,17 @@ export default function PaymentPage() {
           subject: "新的匯款資料已提交",
           html: `
             <div>匯款通知如下：</div>
+            <div>名片 ID: ${cardId || "無"}</div>
             <div>Email: ${remit.email}</div>
             <div>金額: ${remit.amount}</div>
+            <div>帳號後五碼: ${remit.code}</div>
+            <div>匯款時間: ${remit.time}</div>
             ${receipt_url ? `<div>憑證: <a href="${receipt_url}" target="_blank">查看圖片</a></div>` : ""}
           `,
         }),
       });
 
-      // ======== Email 通知「用戶」 ========
+      // Email 通知用戶
       await fetch("/api/sendMail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -122,12 +130,12 @@ export default function PaymentPage() {
           html: `
             <div>親愛會員您好：</div>
             <div>我們已收到您的匯款資料（金額100元），請靜待1-2個工作日審核。</div>
+            <div>審核通過後，您的名片將自動上線。</div>
             <div>有問題請回覆此信或聯絡客服。</div>
           `,
           replyTo: "service@showall.tw",
         }),
       });
-      // ===================================
     } else {
       setMsg("發生錯誤，請重試或聯絡客服");
     }
@@ -139,6 +147,12 @@ export default function PaymentPage() {
         <h2 className="text-2xl font-bold text-blue-800 text-center mb-2">
           讓更多人找到你，上架一年只要 100 元！
         </h2>
+
+        {cardId && (
+          <div className="text-sm text-gray-500 text-center">
+            名片 ID：{cardId}
+          </div>
+        )}
 
         <div className="flex gap-3 justify-center mb-3">
           <button
@@ -275,11 +289,20 @@ export default function PaymentPage() {
         )}
 
         <div className="text-center text-gray-400 text-sm pt-4 border-t mt-6">
-          <a href="mailto:service@showall.tw">
-            若有任何問題請聯繫客服：service@showall.tw
+          若有任何問題請聯繫客服：
+          <a href="mailto:service@showall.tw" className="text-blue-600 hover:underline">
+            service@showall.tw
           </a>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={<div className="text-center py-10">載入中...</div>}>
+      <PaymentPageInner />
+    </Suspense>
   );
 }
