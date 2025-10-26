@@ -58,39 +58,45 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
 
   function copyUrl() {
     navigator.clipboard.writeText(referralUrl);
-    setMsg("✅ 已複製推薦連結！分享給朋友即可獲得 50 元回饋");
+    setMsg("✅ 已複製推薦連結！邀請朋友上傳成功，抽獎機會+1");
     setTimeout(() => setMsg(""), 3000);
   }
 
-  // 專屬推薦統計/回饋金申請 email 流程
+  // 專屬推薦統計 email 流程
   async function handleSendStatsEmail() {
     if (!card?.email || !card?.url_slug) {
       setMsg("未取得 email，請稍後重試！");
       return;
     }
     setEmailLoading(true);
-    const token = Math.random().toString(36).slice(2, 12) + Date.now();
+
+    // 查詢已完成推薦數（抽獎次數）
+    const { count } = await supabase
+      .from('referrals')
+      .select('*', { count: 'exact', head: true })
+      .eq('referrer_slug', card.url_slug)
+      .eq('status', 'completed');
+    const drawCount = count || 0;
     await fetch("/api/sendMail", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         to: card.email,
-        subject: "SHOWALL推薦統計與回饋金申請",
+        subject: "SHOWALL抽獎機會統計",
         html: `
-          <div style="font-family: Arial;line-height:1.7;">
-            <h2 style="color:#2563eb;">您的推薦統計</h2>
-            <p>若要查看推薦明細、累積獎勵並申請提領，請點下方專屬連結：</p>
-            <p style="text-align:center;margin:30px 0;">
-              <a href="https://www.showall.tw/my-referrals/withdraw?slug=${card.url_slug}&token=${token}" 
-                 style="background:#2563eb;color:white;text-decoration:none;font-weight:bold;border-radius:5px;padding:1em 2em;">
-                前往查詢與申請提領
-              </a>
-            </p>
-            <div style="margin-top:20px;color:#666;font-size:13px;">
-              本信件由系統產生，如非本人請忽略。<br/>申請人資料僅供存查及依法申報所得用。
-            </div>
-          </div>
-        `
+  <div style="font-family: Arial;line-height:1.7;">
+    <h2 style="color:#2563eb;">您的推薦抽獎機會統計</h2>
+    <p>您目前已累積 <b style="color:#1868ca;font-size:20px;">${drawCount}</b> 次抽獎機會。每多推薦1人成功註冊，即多1次抽獎資格！</p>
+    <ul style="margin:20px 0 14px 15px;color:#174179;">
+      <li>每月將舉行分享抽獎，資格越多，中獎機率越高！</li>
+      <li>請持續邀請朋友註冊、刊登名片，衝高抽獎次數！</li>
+    </ul>
+    <div style="margin-top:20px;color:#666;font-size:13px;">
+      本信件由系統產生，如非本人請忽略。
+    </div>
+  </div>
+`
+
       }),
     });
     setEmailLoading(false);
@@ -183,7 +189,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-5 mt-6 w-full max-w-md">
         <h3 className="font-bold text-blue-900 text-lg mb-2">💰 邀請朋友上傳名片</h3>
         <p className="text-gray-700 text-sm mb-4">
-          分享此連結邀請朋友註冊，成功推薦一人即可獲得 <strong className="text-red-600">50元回饋</strong>！
+          分享此連結邀請朋友上傳，成功推薦一人即可獲得 <strong className="text-red-600">抽獎機會+1</strong>！
         </p>
         <div className="flex gap-2 mb-3">
           <input
@@ -207,13 +213,13 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         </button>
       </div>
 
-      {/* 新增專屬推薦統計/回饋金申請 email 通知按鈕 */}
+      {/* 新增專屬推薦統計 email 通知按鈕 */}
       <button
         onClick={handleSendStatsEmail}
         className="block w-full text-center py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-900 font-bold mt-3"
         disabled={emailLoading}
       >
-        {emailLoading ? "寄送中..." : "寄送推薦統計/回饋金申請信件"}
+        {emailLoading ? "寄送中..." : "寄送推薦統計"}
       </button>
       {msg && (
         <div className="mt-2 text-center font-bold text-purple-700 bg-purple-50 px-2 py-2 rounded">

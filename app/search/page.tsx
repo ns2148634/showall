@@ -9,6 +9,11 @@ import RandomCards from "@/components/RandomCards"
 const PAGE_SIZE = 10
 
 export default function SearchPage() {
+  const [showTipsModal, setShowTipsModal] = useState(false)
+  useEffect(() => {
+    setTimeout(() => setShowTipsModal(true), 500)
+  }, [])
+
   const [keyword, setKeyword] = useState("")
   const [cities, setCities] = useState<string[]>([])
   const [areas, setAreas] = useState<string[]>([])
@@ -20,22 +25,18 @@ export default function SearchPage() {
   const [cards, setCards] = useState<any[]>([])
   const [loading, setLoading] = useState(false)
 
-  // 抓取城市（拿掉 sort_order）
   useEffect(() => {
     async function fetchCities() {
       const { data: cityObjs } = await supabase
         .from('cities')
-        .select('citys');  // ← 只抓 citys
-      
+        .select('citys')
       const uniqueCities = Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)))
-        .sort();  // ← 字母排序
-      
+        .sort()
       setCities(["全部", ...uniqueCities]);
     }
     fetchCities()
   }, [])
 
-  // 根據選擇的城市抓地區（拿掉 sort_order）
   useEffect(() => {
     async function fetchAreas() {
       if (selectedCity === "全部") {
@@ -45,12 +46,10 @@ export default function SearchPage() {
       }
       const { data: ds } = await supabase
         .from('cities')
-        .select('district')  // ← 只抓 district
+        .select('district')
         .eq('citys', selectedCity)
-      
       const uniqueAreas = Array.from(new Set(ds?.map(a => a.district).filter(Boolean)))
-        .sort();  // ← 字母排序
-      
+        .sort()
       setAreas(["全部", ...uniqueAreas])
       setSelectedArea("全部")
     }
@@ -105,8 +104,42 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
+      {/* 搜尋技巧彈窗 */}
+      {showTipsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-gray-800 relative">
+            <button
+              className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
+              onClick={() => setShowTipsModal(false)}
+              title="關閉"
+            >×</button>
+            <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">搜尋技巧</h2>
+            <div className="space-y-4 text-lg">
+              <div>
+                <span className="font-bold text-blue-700">1. 關鍵字多元組合搜尋</span><br/>
+                可用「保母」、「教練」、「美甲」、「買車」、「房地產」、「品牌」等專業、公司、商品名稱搜尋。
+              </div>
+              <div>
+                <span className="font-bold text-blue-700">2. 善用產業分區、地區</span><br/>
+                選擇所在地區、特定行業分類，精準找在地專家或熱門服務商。
+              </div>
+              <div>
+                <span className="font-bold text-blue-700">3. 以公司、品牌、姓名都能搜尋</span><br/>
+                例：找「TOYOTA、健身教練、保母、舞蹈老師」都可直接輸入名稱，或用中文/英文查詢。
+              </div>
+              <div>
+                <span className="font-bold text-blue-700">4. 用簡介、服務項目、關鍵字助力</span><br/>
+                填得完整的名片容易被排行前面，搜尋時可善用服務介紹、專長關鍵字。
+              </div>
+            </div>
+            <button
+              className="block w-full py-2 mt-6 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
+              onClick={() => setShowTipsModal(false)}
+            >知道了，開始搜尋</button>
+          </div>
+        </div>
+      )}
       <main className="max-w-3xl mx-auto py-10">
-        {/* 搜尋條件 */}
         <form className="flex flex-wrap gap-4 justify-center mb-6" onSubmit={doSearch}>
           <input
             type="text"
@@ -131,13 +164,8 @@ export default function SearchPage() {
           </select>
           <button type="submit" className="bg-blue-600 text-white rounded px-4">搜尋</button>
         </form>
-        
         <div className="text-gray-700 mb-2">{loading ? "載入中..." : `共 ${total} 筆結果`}</div>
-        
-        {/* 隨機10張名片（沒條件時） */}
         {!hasCondition && <RandomCards limit={10} />}
-        
-        {/* 有條件時才顯示 cards 列表 */}
         {hasCondition &&
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
             {cards.map(card => (
@@ -158,16 +186,15 @@ export default function SearchPage() {
             ))}
           </div>
         }
-        
         {hasCondition &&
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
-            {Array.from({length: Math.ceil(total/PAGE_SIZE)}, (_,i) => (
-              <button
-                key={i}
-                className={`px-3 py-1 rounded ${page===i+1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
-                onClick={()=>setPage(i+1)}
-              >{i+1}</button>
-            ))}
+              {Array.from({length: Math.ceil(total/PAGE_SIZE)}, (_,i) => (
+                <button
+                  key={i}
+                  className={`px-3 py-1 rounded ${page===i+1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
+                  onClick={()=>setPage(i+1)}
+                >{i+1}</button>
+              ))}
           </div>
         }
       </main>

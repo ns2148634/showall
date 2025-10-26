@@ -28,14 +28,7 @@ export default function Home() {
     fetchCards();
   }, []);
 
-  useEffect(() => {
-    // 可加 localStorage 控制只跳一次
-    if (!localStorage.getItem("showallModal")) {
-      setTimeout(() => setShowModal(true), 1000);
-      localStorage.setItem("showallModal", "1");
-    }
-  }, []);
-
+  
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-3xl mx-auto py-10">
@@ -50,9 +43,7 @@ export default function Home() {
               >×</button>
               <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">歡迎來到 SHOWALL 百業名片網</h2>
               <ul className="mb-6 space-y-3 text-lg">
-                <li>1. <span className="font-bold">找到你想找的專業</span>（全台368地區、完整行業分類，輕鬆搜尋、快速聯絡）</li>
-                <li>2. <span className="font-bold">曝光你的專業</span>（手機即傳名片，打造個人專屬頁供分享）</li>
-                <li>3. <span className="font-bold text-green-600">推薦成功即享回饋金50元</span>（邀請朋友註冊，每人現金獎勵）</li>
+                <li>1. <span className="font-bold">「上傳名片抽 iPhone 17」</span>讓你的專業被看見，也有機會帶走全新 iPhone！</li>
               </ul>
               <button
                 className="block w-full py-2 mt-4 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
