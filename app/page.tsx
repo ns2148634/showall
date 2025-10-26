@@ -12,6 +12,7 @@ type Card = {
 
 export default function Home() {
   const [cards, setCards] = useState<Card[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     async function fetchCards() {
@@ -27,10 +28,43 @@ export default function Home() {
     fetchCards();
   }, []);
 
+  useEffect(() => {
+    // 可加 localStorage 控制只跳一次
+    if (!localStorage.getItem("showallModal")) {
+      setTimeout(() => setShowModal(true), 1000);
+      localStorage.setItem("showallModal", "1");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-100">
       <main className="max-w-3xl mx-auto py-10">
-        {/* 入口按鈕，僅剩兩個 */}
+        {/* 彈跳視窗 */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-gray-800 relative">
+              <button
+                className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
+                onClick={() => setShowModal(false)}
+                title="關閉"
+              >×</button>
+              <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">歡迎來到 SHOWALL 百業名片網</h2>
+              <ul className="mb-6 space-y-3 text-lg">
+                <li>1. <span className="font-bold">找到你想找的專業</span>（全台368地區、完整行業分類，輕鬆搜尋、快速聯絡）</li>
+                <li>2. <span className="font-bold">曝光你的專業</span>（手機即傳名片，打造個人專屬頁供分享）</li>
+                <li>3. <span className="font-bold text-green-600">推薦成功即享回饋金50元</span>（邀請朋友註冊，每人現金獎勵）</li>
+              </ul>
+              <button
+                className="block w-full py-2 mt-4 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
+                onClick={() => setShowModal(false)}
+              >
+                知道了，開始探索
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 入口按鈕 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
           <Link href="/search" className="block">
             <div className="bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
@@ -80,7 +114,6 @@ export default function Home() {
             <div className="col-span-full text-center text-gray-400 py-12">暫無名片</div>
           )}
         </div>
-
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
         &copy; 2025 SHOWALL 百業名片網
