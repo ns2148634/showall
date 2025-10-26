@@ -27,6 +27,7 @@ type Card = {
 export default function CardPage({ params }: { params: { url_slug: string } }) {
   const [card, setCard] = useState<Card | null>(null);
   const [msg, setMsg] = useState("");
+  const [emailLoading, setEmailLoading] = useState(false);
 
   useEffect(() => {
     async function fetchCard() {
@@ -46,19 +47,10 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     fetchCard();
   }, [params.url_slug]);
 
-  if (msg) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center text-red-500 font-bold">{msg}</div>
-    </div>
-  );
-
-  if (!card) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center text-gray-400">載入中...</div>
-    </div>
-  );
-
-  const referralUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/upload?referrer=${card.url_slug}`;
+  // 推薦邀請連結
+  const referralUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/upload?referrer=${card?.url_slug ?? ""}`
+    : "";
 
   function handleShare() {
     window.open(referralUrl, "_blank");
@@ -69,6 +61,54 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     setMsg("✅ 已複製推薦連結！分享給朋友即可獲得 50 元回饋");
     setTimeout(() => setMsg(""), 3000);
   }
+
+  // 專屬推薦統計/回饋金申請 email 流程
+  async function handleSendStatsEmail() {
+    if (!card?.email || !card?.url_slug) {
+      setMsg("未取得 email，請稍後重試！");
+      return;
+    }
+    setEmailLoading(true);
+    const token = Math.random().toString(36).slice(2, 12) + Date.now();
+    await fetch("/api/sendMail", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: card.email,
+        subject: "SHOWALL推薦統計與回饋金申請",
+        html: `
+          <div style="font-family: Arial;line-height:1.7;">
+            <h2 style="color:#2563eb;">您的推薦統計</h2>
+            <p>若要查看推薦明細、累積獎勵並申請提領，請點下方專屬連結：</p>
+            <p style="text-align:center;margin:30px 0;">
+              <a href="https://www.showall.tw/my-referrals/withdraw?slug=${card.url_slug}&token=${token}" 
+                 style="background:#2563eb;color:white;text-decoration:none;font-weight:bold;border-radius:5px;padding:1em 2em;">
+                前往查詢與申請提領
+              </a>
+            </p>
+            <div style="margin-top:20px;color:#666;font-size:13px;">
+              本信件由系統產生，如非本人請忽略。<br/>申請人資料僅供存查及依法申報所得用。
+            </div>
+          </div>
+        `
+      }),
+    });
+    setEmailLoading(false);
+    setMsg("已寄送專屬統計/申請連結至您的 Email，請查收！");
+    setTimeout(() => setMsg(""), 4000);
+  }
+
+  if (msg && !card) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center text-red-500 font-bold">{msg}</div>
+    </div>
+  );
+
+  if (!card) return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center text-gray-400">載入中...</div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8 px-4">
@@ -137,8 +177,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
             <p className="text-gray-600 whitespace-pre-wrap">{card.intro}</p>
           </div>
         )}
-
-
       </div>
 
       {/* 推薦邀請區塊 */}
@@ -169,9 +207,16 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         </button>
       </div>
 
-      {/* 提示訊息 */}
+      {/* 新增專屬推薦統計/回饋金申請 email 通知按鈕 */}
+      <button
+        onClick={handleSendStatsEmail}
+        className="block w-full text-center py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-900 font-bold mt-3"
+        disabled={emailLoading}
+      >
+        {emailLoading ? "寄送中..." : "寄送推薦統計/回饋金申請信件"}
+      </button>
       {msg && (
-        <div className="mt-4 text-center font-bold text-green-700 bg-green-100 px-4 py-2 rounded">
+        <div className="mt-2 text-center font-bold text-purple-700 bg-purple-50 px-2 py-2 rounded">
           {msg}
         </div>
       )}
@@ -180,13 +225,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
       <Link href="/" className="mt-8 text-blue-600 hover:underline font-medium">
         ⬅️ 回首頁
       </Link>
-      <Link
-        href={`/my-referrals?slug=${card.url_slug}`}
-        className="block w-full text-center py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition font-medium mt-3"
-      >
-        📊 查看我的推薦統計
-      </Link>
-
     </div>
   );
 }
