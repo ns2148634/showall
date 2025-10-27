@@ -1,4 +1,6 @@
 "use client";
+import Link from "next/link";
+
 export default function ActivityPage() {
   return (
     <div className="min-h-screen bg-yellow-50">
@@ -24,7 +26,7 @@ export default function ActivityPage() {
             <li>活動結束後7日內於官網公布得主。</li>
           </ul>
         </div>
-        <a href="/" className="block mt-8 text-yellow-600 text-center font-bold text-lg underline">← 回首頁</a>
+        <Link href="/" className="block mt-8 text-yellow-600 text-center font-bold text-lg underline">← 回首頁</Link>
       </div>
     </div>
   );
