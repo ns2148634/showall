@@ -117,20 +117,17 @@ export default function SearchPage() {
             <div className="space-y-4 text-lg">
               <div>
                 <span className="font-bold text-blue-700">1. 關鍵字多元組合搜尋</span><br/>
-                可用「保母」、「教練」、「美甲」、「買車」、「房地產」、「品牌」等專業、公司、商品名稱搜尋。
+                可用「保母」、「教練」、「美甲」、「南山人壽」、「房仲」等專業、公司、商品名稱搜尋。
               </div>
               <div>
-                <span className="font-bold text-blue-700">2. 善用產業分區、地區</span><br/>
-                選擇所在地區、特定行業分類，精準找在地專家或熱門服務商。
+                <span className="font-bold text-blue-700">2. 地區</span><br/>
+                選擇所在地區，精準找在地專家或熱門服務商。
               </div>
               <div>
                 <span className="font-bold text-blue-700">3. 以公司、品牌、姓名都能搜尋</span><br/>
-                例：找「TOYOTA、健身教練、保母、舞蹈老師」都可直接輸入名稱，或用中文/英文查詢。
+                例：找「TOYOTA、健身教練、舞蹈老師」都可直接輸入名稱，或用中文/英文查詢。
               </div>
-              <div>
-                <span className="font-bold text-blue-700">4. 用簡介、服務項目、關鍵字助力</span><br/>
-                填得完整的名片容易被排行前面，搜尋時可善用服務介紹、專長關鍵字。
-              </div>
+              
             </div>
             <button
               className="block w-full py-2 mt-6 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"

@@ -137,10 +137,9 @@ function UploadCardPageInner() {
             <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">上傳名片技巧</h2>
             <div className="space-y-4 text-lg">
               <div><span className="font-bold text-blue-700">1. 個人簡介與經營項目要明確</span><br />寫清楚你的服務專長、特色及常用關鍵字（如：健康管理、美甲保險），越明確越容易被搜尋。</div>
-              <div><span className="font-bold text-blue-700">2. 名片圖片要清晰、最好含LOGO或QR碼</span><br />建議正面照片清楚、有設計感，勿失真或拼接。可加企業LOGO、QR碼增加辨識。</div>
-              <div><span className="font-bold text-blue-700">3. 聯絡方式詳細填寫</span><br />建議填全：Email、手機、LINE、Facebook、社群等通路，方便客戶聯絡。</div>
-              <div><span className="font-bold text-blue-700">4. 地區/分類選精確</span><br />用戶常用地區、產業分類搜尋，選擇越細曝光機會越高。</div>
-              <div><span className="font-bold text-green-700">5. 填得完整，系統推薦更容易到手！</span></div>
+              <div><span className="font-bold text-blue-700">2. 聯絡方式詳細填寫</span><br />建議填全：Email、手機、LINE、Facebook、社群等通路，方便客戶聯絡。</div>
+              <div><span className="font-bold text-blue-700">3. 地區選精確</span><br />用戶常用地區分類搜尋，選擇越細曝光機會越高。</div>
+              <div><span className="font-bold text-green-700">4. 填得完整，系統推薦更容易到手！</span></div>
             </div>
             <button className="block w-full py-2 mt-6 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition" onClick={() => setShowTipsModal(false)}>知道了，開始編輯名片</button>
           </div>
