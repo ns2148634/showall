@@ -1,7 +1,25 @@
 "use client";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function ActivityPage() {
+  const [cardCount, setCardCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    async function fetchTotalCards() {
+      const { count, error } = await supabase
+        .from("cards")
+        .select("id", { count: "exact", head: true })
+        .eq("published", true);
+      if (!error) setCardCount(count ?? 0);
+      else setCardCount(0);
+    }
+    fetchTotalCards();
+  }, []);
+
+  const totalNeed = 1000;
+  const remain = typeof cardCount === "number" ? Math.max(0, totalNeed - cardCount) : "...";
   return (
     <div className="min-h-screen bg-yellow-50">
       <div className="max-w-2xl mx-auto py-10 px-4">
@@ -16,9 +34,14 @@ export default function ActivityPage() {
             <li>3️⃣ 當全站名片總數達 1000 張，即開獎抽出 iPhone 17 幸運得主！</li>
           </ul>
           <h2 className="text-xl font-bold text-yellow-600 mt-6 mb-3">目前進度：</h2>
-          <p>📊 已上傳名片：<b className="text-blue-700">738 / 1000</b> 張 <span className="text-xs text-gray-400">(每小時更新一次)</span></p>
-          <h2 className="text-xl font-bold text-yellow-600 mt-6 mb-3">加碼活動：</h2>
-          <p className="mb-3">（加碼內容請補上）</p>
+          <p>
+            📊 已上傳名片：
+            <b className="text-blue-700">{cardCount !== null ? cardCount : "..."}</b>
+             / 1000 張
+            <span className="text-xs text-gray-400 ml-2">(每小時更新一次)</span>
+            <br/>
+            <span className="text-yellow-600 text-base">距離開獎只差 <b>{remain}</b> 張！</span>
+          </p>
           <h2 className="text-xl font-bold text-gray-600 mt-7 mb-2">注意事項：</h2>
           <ul className="ml-5 list-disc text-base text-gray-700 space-y-1">
             <li>抽獎資格以上傳成功時間為準。</li>
