@@ -68,7 +68,7 @@ export default function Home() {
                 onClick={() => setShowModal(false)}
                 title="關閉"
               >×</button>
-              <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">歡迎來到 SHOWALL 百業名片網</h2>
+              <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">歡迎來到 SHOWALL 名片+</h2>
               <ul className="mb-6 space-y-3 text-lg">
                 <li>1. <span className="font-bold">「上傳名片抽 iPhone 17」</span> 讓你的專業被看見，也有機會帶走全新 iPhone！</li>
                 <li>2. 隨時搜尋、快速找到服務/公司/人脈</li>
@@ -117,7 +117,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
-        &copy; 2025 SHOWALL 百業名片網
+        &copy; 2025 SHOWALL 名片+
       </footer>
     </div>
   );

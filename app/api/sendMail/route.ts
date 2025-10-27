@@ -14,7 +14,7 @@ export async function POST(req: Request) {
   });
 
   await transporter.sendMail({
-    from: '"SHOWALL百業名片網" <service@showall.tw>',
+    from: '"SHOWALL名片+" <service@showall.tw>',
     to,
     subject,
     html,

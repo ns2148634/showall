@@ -25,7 +25,7 @@ export default function ActivityPage() {
       <div className="max-w-2xl mx-auto py-10 px-4">
         <h1 className="text-3xl font-bold text-yellow-700 mb-5 text-center">🎁 上傳名片抽 iPhone 17！越多人上傳越快開獎！</h1>
         <div className="bg-white rounded-lg shadow p-6 text-lg font-medium mb-6">
-          <p><span className="font-bold text-blue-700">SHOWALL 百業名片網</span>邀你一起上傳名片、拓展人脈、拿好禮！</p>
+          <p><span className="font-bold text-blue-700">SHOWALL 名片+</span>邀你一起上傳名片、拓展人脈、拿好禮！</p>
           <p className="mt-4">📱 當全站累積上架名片 <b className="text-pink-600">滿 1000 張</b>，我們就會抽出一位幸運得主，<br />送出 <span className="text-red-700 font-bold">最新款 iPhone 17</span> 一支！</p>
           <h2 className="text-xl font-bold text-yellow-600 mt-6 mb-3">參加方式：</h2>
           <ul className="space-y-2 ml-4">

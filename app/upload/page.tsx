@@ -261,7 +261,7 @@ function UploadCardPageInner() {
         </form>
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
-        &copy; 2025 SHOWALL 百業名片網
+        &copy; 2025 SHOWALL 名片+
       </footer>
     </div>
   );
