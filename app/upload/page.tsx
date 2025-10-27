@@ -190,6 +190,46 @@ function UploadCardPageInner() {
               setSelectedArea={val => setForm(f => ({ ...f, area: val }))}
             />
           </div>
+          {/* 四個營業/經營項目 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">營業/經營項目 1</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag1} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag1: e.target.value }))} placeholder="如：美髮、修車、健身教練" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 2</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag2} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag2: e.target.value }))} placeholder="可留空" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 3</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag3} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag3: e.target.value }))} placeholder="可留空" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 4</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag4} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag4: e.target.value }))} placeholder="可留空" />
+          </div>
+          {/* 自我簡介 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">簡介 / 服務特色</label>
+            <textarea
+              className="border p-2 rounded w-full"
+              maxLength={300}
+              rows={4}
+              value={form.intro}
+              onChange={e => setForm(f => ({ ...f, intro: e.target.value }))}
+              placeholder="請輸入你的自我介紹、專長或服務內容…"
+            />
+          </div>
+          {/* 推薦人 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">推薦人專屬碼（自動填入）</label>
+            <input type="text" name="referrer_slug" value={form.referrer_slug} readOnly className="border p-2 rounded w-full bg-gray-50" placeholder="由推薦人連結自動填入" />
+            <p className="text-xs text-gray-500 mt-1">如果你是朋友推薦進來，這裡會自動帶入推薦專屬碼。</p>
+          </div>
+          {/* 圖片區 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">名片正面 <span className="text-red-500">*</span></label>
             <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => handleFileChange(e, "front")} className="w-full" />
@@ -207,11 +247,6 @@ function UploadCardPageInner() {
                 <img src={previewBack} alt="預覽背面" className="w-32 rounded shadow hover:shadow-lg transition" style={{ objectFit: "contain" }} />
               </div>
             )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">推薦人專屬碼（自動填入）</label>
-            <input type="text" name="referrer_slug" value={form.referrer_slug} readOnly className="border p-2 rounded w-full bg-gray-50" placeholder="由推薦人連結自動填入" />
-            <p className="text-xs text-gray-500 mt-1">如果你是朋友推薦進來，這裡會自動帶入推薦專屬碼。</p>
           </div>
           <button type="button" disabled={loading} className="w-full py-3 mt-6 rounded bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition disabled:opacity-50" onClick={handlePreview}>
             預覽名片
