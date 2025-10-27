@@ -223,12 +223,7 @@ function UploadCardPageInner() {
               placeholder="請輸入你的自我介紹、專長或服務內容…"
             />
           </div>
-          {/* 推薦人 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">推薦人專屬碼（自動填入）</label>
-            <input type="text" name="referrer_slug" value={form.referrer_slug} readOnly className="border p-2 rounded w-full bg-gray-50" placeholder="由推薦人連結自動填入" />
-            <p className="text-xs text-gray-500 mt-1">如果你是朋友推薦進來，這裡會自動帶入推薦專屬碼。</p>
-          </div>
+         
           {/* 圖片區 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">名片正面 <span className="text-red-500">*</span></label>
@@ -255,7 +250,14 @@ function UploadCardPageInner() {
             <div className={`mt-3 text-center font-bold ${msg.includes('成功') ? "text-green-600" : "text-red-500"}`}>
               {msg}
             </div>
+            
           )}
+           {/* 推薦人 */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">推薦人專屬碼（自動填入）</label>
+            <input type="text" name="referrer_slug" value={form.referrer_slug} readOnly className="border p-2 rounded w-full bg-gray-50" placeholder="由推薦人連結自動填入" />
+            <p className="text-xs text-gray-500 mt-1">如果你是朋友推薦進來，這裡會自動帶入推薦專屬碼。</p>
+          </div>
         </form>
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">

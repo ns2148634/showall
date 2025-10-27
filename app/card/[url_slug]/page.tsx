@@ -37,7 +37,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         .eq("url_slug", params.url_slug)
         .eq("published", true)
         .single();
-
       if (error || !data) {
         setMsg("查無此名片或尚未發佈");
         return;
@@ -95,7 +94,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     </div>
   </div>
 `
-
       }),
     });
     setEmailLoading(false);
@@ -184,6 +182,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         )}
       </div>
 
+
       {/* 推薦邀請區塊 */}
       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-5 mt-6 w-full max-w-md">
         <h3 className="font-bold text-blue-900 text-lg mb-2">💰 邀請朋友上傳名片</h3>
@@ -210,6 +209,22 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         >
           我也要上傳
         </button>
+
+        {/* 加上推薦邀請連結的 QRCode 圖片 */}
+        <div className="mt-6 flex flex-col items-center gap-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+          <div className="text-sm text-gray-700 font-bold mb-2">推薦連結 QR Code</div>
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encodeURIComponent(referralUrl)}`}
+            alt="推薦QR Code"
+            width={170}
+            height={170}
+            className="rounded bg-white shadow"
+            style={{ maxWidth: 170, maxHeight: 170 }}
+          />
+          <div className="text-xs text-gray-500 mt-1 text-center">
+            直接掃碼即連到「推薦上傳」頁，或手機長按儲存分享給朋友
+          </div>
+        </div>
       </div>
 
       {/* 新增專屬推薦統計 email 通知按鈕 */}
