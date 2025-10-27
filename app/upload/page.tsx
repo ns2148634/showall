@@ -227,7 +227,7 @@ function UploadCardPageInner() {
           {/* 圖片區 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">名片正面 <span className="text-red-500">*</span></label>
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => handleFileChange(e, "front")} className="w-full" />
+            <input type="file" accept="image/*"" onChange={e => handleFileChange(e, "front")} className="w-full" />
             {previewFront && (
               <div className="mt-2 flex justify-center">
                 <img src={previewFront} alt="預覽正面" className="w-32 rounded shadow hover:shadow-lg transition" style={{ objectFit: "contain" }} />
@@ -236,7 +236,7 @@ function UploadCardPageInner() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">名片背面</label>
-            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => handleFileChange(e, "back")} className="w-full" />
+            <input type="file" accept="image/*" onChange={e => handleFileChange(e, "back")} className="w-full" />
             {previewBack && (
               <div className="mt-2 flex justify-center">
                 <img src={previewBack} alt="預覽背面" className="w-32 rounded shadow hover:shadow-lg transition" style={{ objectFit: "contain" }} />
