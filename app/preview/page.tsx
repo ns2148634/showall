@@ -23,7 +23,6 @@ export default function PreviewPage() {
     const formStr = window.sessionStorage.getItem("previewForm");
     const front = window.sessionStorage.getItem("previewFront");
     const back = window.sessionStorage.getItem("previewBack");
-
     if (formStr) setForm(JSON.parse(formStr));
     if (front) setPreviewFront(front);
     if (back) setPreviewBack(back);
@@ -34,10 +33,8 @@ export default function PreviewPage() {
       setMsg("資料不完整，請返回重新填寫");
       return;
     }
-
     setLoading(true);
     setMsg("");
-
     try {
       // 1. 上傳圖片到 Supabase Storage
       const frontBlob = await fetch(previewFront).then(r => r.blob());
@@ -45,7 +42,6 @@ export default function PreviewPage() {
       const { data: frontUpload, error: frontError } = await supabase.storage
         .from('card-images')
         .upload(frontFileName, frontBlob, { contentType: 'image/jpeg' });
-
       if (frontError) throw new Error("正面圖片上傳失敗：" + frontError.message);
 
       const frontUrl = supabase.storage
@@ -59,7 +55,6 @@ export default function PreviewPage() {
         const { data: backUpload, error: backError } = await supabase.storage
           .from('card-images')
           .upload(backFileName, backBlob, { contentType: 'image/jpeg' });
-
         if (backError) throw new Error("背面圖片上傳失敗：" + backError.message);
 
         backUrl = supabase.storage
@@ -70,7 +65,7 @@ export default function PreviewPage() {
       // 2. 生成 url_slug
       const urlSlug = genSlug(form.name || form.email);
 
-      // 3. 定義 cardUrl（在這裡定義！）
+      // 3. 定義 cardUrl
       const cardUrl = `https://www.showall.tw/card/${urlSlug}`;
 
       // 4. 寫入 cards table
@@ -93,7 +88,7 @@ export default function PreviewPage() {
         image_url_back: backUrl,
         url_slug: urlSlug,
         published: false,
-        referrer: form.referrer || null
+        referrer_slug: form.referrer_slug || null // 統一用唯一碼欄
       };
 
       const { data: insertData, error: insertError } = await supabase
@@ -106,65 +101,65 @@ export default function PreviewPage() {
       const cardId = insertData[0].id;
 
       // 5. 如果有推薦人，記錄到 referrals table
-      if (form.referrer && form.referrer.trim()) {
+      if (form.referrer_slug && form.referrer_slug.trim()) {
         await supabase.from('referrals').insert([{
-          referrer_slug: form.referrer.trim(),
+          referrer_slug: form.referrer_slug.trim(),
           referee_email: form.email,
           referee_card_id: cardId,
-          status: 'pending',
-          reward_amount: 50
+          status: 'pending'
         }]);
       }
 
-      // 6. 寄信給用戶（現在 cardUrl 已經定義了）
+      // 6. 查目前已上架名片進度（活動用）
+      const { count: cardCount } = await supabase
+        .from("cards")
+        .select("id", { count: "exact", head: true })
+        .eq("published", true);
+
+      // 7. 寄信給用戶（抽iPhone17活動進度、推薦說明）
       await fetch("/api/sendMail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           to: form.email,
-          subject: "您的 SHOWALL 專屬名片網址已建立",
+          subject: "您的 SHOWALL 名片已建立 - 抽 iPhone 17 活動進度",
           html: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-            <h2 style="color: #2563eb;">您好！</h2>
-            <p>您已成功建立 <strong>SHOWALL 專屬名片網址</strong>：</p>
-            <p style="font-size: 18px;">
-              <a href="${cardUrl}" style="color: #2563eb; text-decoration: none;">${cardUrl}</a>
-            </p>
-            <p>立即回到網站確認資料與付款，或分享此網址給朋友！</p>
-            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
-            <h3 style="color: #16a34a;">邀請朋友註冊上傳名片</h3>
-            <p>成功推薦即享每人 <strong style="color: #dc2626;">50元回饋</strong>！</p>
-            <p style="margin-top: 20px;">
-              <a href="https://www.showall.tw/upload?referrer=${urlSlug}" 
-                 style="display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 5px;">
-                立即邀請朋友
+          <div style="font-family: Arial,sans-serif;line-height:1.7;">
+            <h2 style="color:#eab308;">🎁 您已成功參加「抽 iPhone 17」活動！</h2>
+            <p>您已成功建立 <strong>SHOWALL 名片</strong>，並獲得抽獎資格！</p>
+            <p>活動辦法：當全站名片 <b>累積上架滿 1000 張</b>，我們會抽一位幸運得主送出 <b style="color:#ff3366">iPhone 17</b>！</p>
+            <div style="font-size:20px;margin:20px 0;">
+              <b>目前進度：</b> <span style="color:#2563eb">${cardCount ?? 0}</span> / 1000 張
+              <span style="margin-left:15px;color:#f59e42;">（每小時更新一次）</span>
+            </div>
+            <hr style="margin:24px 0;" />
+            <h3 style="color:#16a34a;">邀請朋友再加抽獎資格</h3>
+            <p>每成功推薦 1 人上傳名片，再多 1 次抽獎資格（無上限）</p>
+            <p>
+              <a href="https://www.showall.tw/upload?referrer=${urlSlug}"
+                style="display:inline-block;padding:10px 22px;background:#2563eb;color:white;text-decoration:none;border-radius:6px;font-weight:bold;">
+                專屬推薦連結
               </a>
             </p>
-            <hr style="margin: 20px 0; border: none; border-top: 1px solid #ccc;" />
-            <p style="color: #6b7280; font-size: 12px;">
-              此為系統自動發送的郵件，請勿直接回覆。<br>
-              如有問題請聯繫客服：<a href="mailto:service@showall.tw">service@showall.tw</a>
+            <hr style="margin:22px 0;" />
+            <p style="color:#888;font-size:13px;">
+              此信件由系統自動發送，請勿直接回覆。如需協助請聯絡 <a href="mailto:service@showall.tw">service@showall.tw</a>
             </p>
           </div>
-        `,
+          `,
         }),
       });
 
-      // 7. 清除 sessionStorage
       window.sessionStorage.removeItem("previewForm");
       window.sessionStorage.removeItem("previewFront");
       window.sessionStorage.removeItem("previewBack");
-
-      // 8. 導向付款頁
       router.push(`/payment?card_id=${cardId}`);
-
     } catch (err: any) {
       console.error(err);
       setMsg(err.message || "上架失敗，請稍後再試");
       setLoading(false);
     }
   }
-
 
   function handleBack() {
     router.push("/upload");
@@ -275,6 +270,5 @@ export default function PreviewPage() {
         )}
       </div>
     </div>
-
   );
 }

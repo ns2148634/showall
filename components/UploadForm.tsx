@@ -54,7 +54,7 @@ export default function UploadForm() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             to: form.email,
-            subject: "您的 ABCD 百業名片專屬連結",
+            subject: "您的 SHOWALL 百業名片專屬連結",
             html: `
               <div>您的名片已成功上傳！</div>
               <div>點此瀏覽專屬頁面：<a href="${cardUrl}">${cardUrl}</a></div>

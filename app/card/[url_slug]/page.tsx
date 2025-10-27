@@ -88,7 +88,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     <h2 style="color:#2563eb;">您的推薦抽獎機會統計</h2>
     <p>您目前已累積 <b style="color:#1868ca;font-size:20px;">${drawCount}</b> 次抽獎機會。每多推薦1人成功註冊，即多1次抽獎資格！</p>
     <ul style="margin:20px 0 14px 15px;color:#174179;">
-      <li>每月將舉行分享抽獎，資格越多，中獎機率越高！</li>
       <li>請持續邀請朋友註冊、刊登名片，衝高抽獎次數！</li>
     </ul>
     <div style="margin-top:20px;color:#666;font-size:13px;">
