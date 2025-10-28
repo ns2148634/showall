@@ -64,23 +64,20 @@ export default function SideFabContact() {
                   🔹 立即用 LINE 聯絡
                 </a>
               </li>
+              <h2 className="text-xl font-bold text-blue-700 mb-1 text-center">
+              合作方案與帳務問題？
+            </h2>
+            <ul className="space-y-3 my-6"></ul>
               <li>
                 <Link
                   href="/contact"
                   className="block w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-lg font-bold text-base text-center transition"
                   onClick={() => setIsOpen(false)}
                 >
-                  🔹 聯絡客服
+                  🔹 立即填寫咨詢表單
                 </Link>
               </li>
-              <li>
-                <Link
-                  href="/pricing"
-                  className="block w-full bg-gray-200 hover:bg-blue-200 text-blue-800 py-3 px-5 rounded-lg font-bold text-base text-center transition"
-                  onClick={() => setIsOpen(false)}
-                >
-                </Link>
-              </li>
+             
             </ul>
             <button
               onClick={() => setIsOpen(false)}
