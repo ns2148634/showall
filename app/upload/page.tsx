@@ -128,30 +128,36 @@ function UploadCardPageInner() {
               type="button"
             >×</button>
             <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">💡 上傳前請注意，填得越好曝光越高！</h2>
-            <div className="space-y-4 text-lg">
+            <div className="space-y-4 text-lg max-h-[60vh] overflow-y-auto pr-2">
               <div>
-                <span className="font-bold text-blue-700">1️⃣ 個人簡介與經營項目要明確</span><br />
-                <span className="text-gray-700">請寫清楚你的服務內容、專長與常用關鍵字（如：健康管理、美甲、保險規劃）。越明確，越容易被搜尋與推薦！</span>
+                <span className="font-bold text-blue-700">1️⃣ 服務內容請寫明確</span><br />
+                <span className="text-gray-700">
+                  範例：健康管理、美甲、保險規劃等，明確描述服務項目及關鍵字更易曝光。
+                </span>
               </div>
               <div>
-                <span className="font-bold text-blue-700">2️⃣ 聯絡方式請完整填寫</span><br />
-                <span className="text-gray-700">建議填上 Email、手機、LINE、Facebook 等通路，讓客戶能快速找到你。</span>
+                <span className="font-bold text-blue-700">2️⃣ 聯絡方式建議寫多元</span><br />
+                <span className="text-gray-700">
+                  Email、手機、LINE、Facebook …越充實可提升成交率。
+                </span>
               </div>
               <div>
-                <span className="font-bold text-blue-700">3️⃣ 地區選擇請精確</span><br />
-                <span className="text-gray-700">使用者會依地區搜尋，選越細、曝光越高！</span>
+                <span className="font-bold text-blue-700">3️⃣ 地區請精確填寫</span><br />
+                <span className="text-gray-700">
+                  訂單搜尋依地區，填細有助站內推播與顧客查找。
+                </span>
               </div>
               <div>
-                <span className="font-bold text-green-700">4️⃣ 填得完整，推薦更容易！</span><br />
-                <span className="text-gray-700">系統會優先推薦資料完整的名片，讓你獲得更多曝光與合作機會。</span>
+                <span className="font-bold text-green-700">4️⃣ 填得完整更易推薦！</span><br />
+                <span className="text-gray-700">
+                  系統優先曝光資料完整名片，合作機會與抽獎次數雙贏。
+                </span>
               </div>
               <div className="mt-4 text-base text-yellow-700">
-                📢 <b>上架費用：100元／年</b><br />
-                一次上架，全年曝光不下架！<br />
-                同時參加「📱抽 iPhone 17」活動，上傳越早越快開獎！
+                📢 <b>費用：100元／年</b>，全年曝光不下架，同時參加 <b>抽 iPhone 17</b> 活動！
               </div>
               <div className="mt-2 text-green-700 text-base font-bold">
-                ✅ 按「開始上傳」即表示同意上架規範並進行繳費。
+                ✅ 按「開始上傳」即同意規範並進行繳費。
               </div>
             </div>
             <button
@@ -164,6 +170,7 @@ function UploadCardPageInner() {
           </div>
         </div>
       )}
+
 
       <main className="max-w-lg mx-auto py-10">
         <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={e => e.preventDefault()}>
