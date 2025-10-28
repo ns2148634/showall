@@ -147,11 +147,11 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         {/* 基本資訊 */}
         <div className="space-y-3 mb-6">
           <div className="text-xl font-bold text-gray-800">{card.name}</div>
-          {card.company && <div className="text-gray-600"><strong>公司：</strong>{card.company}</div>}
+          {card.company && <div className="text-gray-600"><strong>公司/組織：</strong>{card.company}</div>}
           <div className="text-gray-600"><strong>Email：</strong>{card.email}</div>
           {(card.citys || card.area) && (
             <div className="text-gray-600">
-              <strong>地區：</strong>
+              <strong>所在地區：</strong>
               {card.citys} {card.area && card.area !== "全部" && `・${card.area}`}
             </div>
           )}
