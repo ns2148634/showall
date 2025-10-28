@@ -101,7 +101,7 @@ function UploadCardPageInner() {
     if (!form.email) { setMsg("請填寫電子信箱"); return; }
     if (!previewFront) { setMsg("請上傳名片正面"); return; }
     setMsg(""); setLoading(true);
-    // 上傳邏輯略
+    // 實際提交上架資料與繳費邏輯可在這裡補充
     setLoading(false);
   }
 
@@ -166,8 +166,111 @@ function UploadCardPageInner() {
       )}
 
       <main className="max-w-lg mx-auto py-10">
-        {/* 以下表單內容同你原始設計，略 */}
-        {/* 省略，請用你原本完整表單區塊 */}
+        <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={e => e.preventDefault()}>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">電子信箱 <span className="text-red-500">*</span></label>
+            <input type="email" className="border p-2 rounded w-full" required value={form.email} maxLength={120}
+              onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="請輸入電子信箱" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">姓名/暱稱 <span className="text-gray-500 text-xs">(上限30字)</span></label>
+            <input type="text" className="border p-2 rounded w-full" value={form.name} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="請輸入姓名或暱稱" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">公司 / 組織 <span className="text-gray-500 text-xs">(上限20字)</span></label>
+            <input type="text" className="border p-2 rounded w-full" value={form.company} maxLength={20}
+              onChange={e => setForm(f => ({ ...f, company: e.target.value }))} placeholder="請輸入公司或組織團體名稱" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">LINE ID <span className="text-gray-500 text-xs">(上限30字)</span></label>
+            <input type="text" className="border p-2 rounded w-full" value={form.line} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, line: e.target.value }))} placeholder="請輸入 LINE ID" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">手機 <span className="text-gray-500 text-xs">(上限20字)</span></label>
+            <input type="text" className="border p-2 rounded w-full" value={form.mobile} maxLength={20}
+              onChange={e => setForm(f => ({ ...f, mobile: e.target.value }))} placeholder="請輸入手機號碼" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">其他聯絡方式 <span className="text-gray-500 text-xs">(上限60字)</span></label>
+            <input type="text" className="border p-2 rounded w-full" value={form.contact_other} maxLength={60}
+              onChange={e => setForm(f => ({ ...f, contact_other: e.target.value }))} placeholder="可填 Instagram、Facebook 等" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">所在地區</label>
+            <AreaSelector
+              cities={cities}
+              selectedCity={form.citys}
+              setSelectedCity={val => setForm(f => ({ ...f, citys: val }))}
+              areas={areas}
+              selectedArea={form.area}
+              setSelectedArea={val => setForm(f => ({ ...f, area: val }))}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">營業/經營項目 1</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag1} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag1: e.target.value }))} placeholder="如：美髮、修車、健身教練" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 2</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag2} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag2: e.target.value }))} placeholder="可留空" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 3</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag3} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag3: e.target.value }))} placeholder="可留空" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 4</label>
+            <input type="text" className="border p-2 rounded w-full" value={form.tag4} maxLength={30}
+              onChange={e => setForm(f => ({ ...f, tag4: e.target.value }))} placeholder="可留空" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">簡介 / 服務特色</label>
+            <textarea
+              className="border p-2 rounded w-full"
+              maxLength={300}
+              rows={4}
+              value={form.intro}
+              onChange={e => setForm(f => ({ ...f, intro: e.target.value }))}
+              placeholder="請輸入你的自我介紹、專長或服務內容…"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">名片正面 <span className="text-red-500">*</span></label>
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => handleFileChange(e, "front")} className="w-full" />
+            {previewFront && (
+              <div className="mt-2 flex justify-center">
+                <img src={previewFront} alt="預覽正面" className="w-32 rounded shadow hover:shadow-lg transition" style={{ objectFit: "contain" }} />
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">名片背面</label>
+            <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => handleFileChange(e, "back")} className="w-full" />
+            {previewBack && (
+              <div className="mt-2 flex justify-center">
+                <img src={previewBack} alt="預覽背面" className="w-32 rounded shadow hover:shadow-lg transition" style={{ objectFit: "contain" }} />
+              </div>
+            )}
+          </div>
+          <button type="button" disabled={loading} className="w-full py-3 mt-6 rounded bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition disabled:opacity-50" onClick={handlePreview}>
+            預覽名片
+          </button>
+          {msg && (
+            <div className={`mt-3 text-center font-bold ${msg.includes('成功') ? "text-green-600" : "text-red-500"}`}>
+              {msg}
+            </div>
+          )}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">推薦人專屬碼（自動填入）</label>
+            <input type="text" name="referrer_slug" value={form.referrer_slug} readOnly className="border p-2 rounded w-full bg-gray-50" placeholder="由推薦人連結自動填入" />
+            <p className="text-xs text-gray-500 mt-1">如果你是朋友推薦進來，這裡會自動帶入推薦專屬碼。</p>
+          </div>
+        </form>
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
         &copy; 2025 SHOWALL 名片+
