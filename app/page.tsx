@@ -4,19 +4,16 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-
 type Card = {
   id: number;
   image_url_front: string;
   url_slug: string;
 };
 
-
 export default function Home() {
   const [cards, setCards] = useState<Card[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [totalCards, setTotalCards] = useState<number | null>(null);
-
 
   useEffect(() => {
     async function fetchCards() {
@@ -32,8 +29,6 @@ export default function Home() {
     fetchCards();
   }, []);
 
-
-  // 總上架名片數（活動進度用）
   useEffect(() => {
     async function fetchTotalCards() {
       const { count, error } = await supabase
@@ -45,11 +40,19 @@ export default function Home() {
     fetchTotalCards();
   }, []);
 
-
+  // 彈窗只跳一次（localStorage 控制）
   useEffect(() => {
-    setTimeout(() => setShowModal(true), 1000);
+    if (typeof window !== "undefined") {
+      if (!localStorage.getItem("showall_home_modal_shown")) {
+        setTimeout(() => setShowModal(true), 1000);
+        localStorage.setItem("showall_home_modal_shown", "1");
+      }
+    }
   }, []);
 
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -57,14 +60,21 @@ export default function Home() {
         {/* 活動 banner */}
         <div className="mb-7">
           <Link href="/activity" className="block">
-            <div className="bg-yellow-300 rounded-lg px-6 py-4 text-xl font-bold text-gray-900 flex items-center justify-between hover:bg-yellow-400 shadow-lg"
-              style={{ border: "2px dashed #FFD600" }}>
-              <span>🎉 上傳名片抽 iPhone 17！距離開獎只差 <span className="text-red-700">{Math.max(0, 1000 - (totalCards ?? 0))}</span> 張！</span>
-              <span className="text-lg bg-white px-2 py-1 rounded font-bold text-yellow-600">活動說明</span>
+            <div
+              className="bg-yellow-300 rounded-lg px-6 py-4 text-xl font-bold text-gray-900 flex items-center justify-between hover:bg-yellow-400 shadow-lg"
+              style={{ border: "2px dashed #FFD600" }}
+            >
+              <span>
+                🎉 上傳名片抽 iPhone 17！距離開獎只差{" "}
+                <span className="text-red-700">{Math.max(0, 1000 - (totalCards ?? 0))}</span>
+                {" "}張！
+              </span>
+              <span className="text-lg bg-white px-2 py-1 rounded font-bold text-yellow-600">
+                活動說明
+              </span>
             </div>
           </Link>
         </div>
-
 
         {/* 彈跳視窗 */}
         {showModal && (
@@ -72,25 +82,30 @@ export default function Home() {
             <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-gray-800 relative">
               <button
                 className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
                 title="關閉"
-              >×</button>
+                type="button"
+              >
+                ×
+              </button>
               <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">歡迎來到 SHOWALL 名片+</h2>
               <ul className="mb-6 space-y-3 text-lg">
-                <li>1. <span className="font-bold">「上傳名片抽 iPhone 17」</span> 讓你的專業被看見，也有機會帶走全新 iPhone！</li>
+                <li>
+                  1. <span className="font-bold">「上傳名片抽 iPhone 17」</span> 讓你的專業被看見，也有機會帶走全新 iPhone！
+                </li>
                 <li>2. 隨時搜尋、快速找到服務/公司/人脈</li>
                 <li>3. 分享成功還可多一次抽獎機會！</li>
               </ul>
               <button
                 className="block w-full py-2 mt-4 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
-                onClick={() => setShowModal(false)}
+                onClick={handleCloseModal}
+                type="button"
               >
                 知道了，開始探索
               </button>
             </div>
           </div>
         )}
-
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
           <Link href="/search" className="block">
@@ -109,15 +124,24 @@ export default function Home() {
           </Link>
         </div>
 
-
         <h3 className="text-lg font-bold mb-6 text-gray-700">最新推薦名片</h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
           {cards.length > 0 ? (
             cards.map((card) => (
               <Link href={`/card/${card.url_slug}`} key={card.id} className="block">
-                <Image src={card.image_url_front} alt="名片正面" width={180} height={110}
+                <Image
+                  src={card.image_url_front}
+                  alt="名片正面"
+                  width={180}
+                  height={110}
                   className="mx-auto object-cover rounded"
-                  style={{ boxShadow: "none", borderRadius: "10px", background: "#fff", maxHeight: 140 }} />
+                  style={{
+                    boxShadow: "none",
+                    borderRadius: "10px",
+                    background: "#fff",
+                    maxHeight: 140,
+                  }}
+                />
               </Link>
             ))
           ) : (

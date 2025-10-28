@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function SideFabContact() {
   const [isOpen, setIsOpen] = useState(false);
@@ -27,13 +28,14 @@ export default function SideFabContact() {
           minWidth: 40,
           boxShadow: "0 2px 8px rgba(39,102,173,0.14), 0 8px 24px 2px rgba(0,0,0,.16)"
         }}
-        aria-label="定制名片"
-        title="定制名片"
+        aria-label="名片+客服"
+        title="名片+客服"
+        type="button"
       >
-        定制名片
+        名片+客服
       </button>
 
-      {/* 彈出modal內容同前一組可複用 */}
+      {/* 彈出modal */}
       {isOpen && (
         <div
           className={`fixed z-50 inset-0 bg-black/50 transition-all flex ${isMobile ? "items-end" : "items-center"
@@ -63,32 +65,34 @@ export default function SideFabContact() {
                 </a>
               </li>
               <li>
-                <a
-                  href="/contact-form"
+                <Link
+                  href="/contact"
                   className="block w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-lg font-bold text-base text-center transition"
+                  onClick={() => setIsOpen(false)}
                 >
-                  🔹 填寫線上需求表
-                </a>
+                  🔹 聯絡客服
+                </Link>
               </li>
               <li>
-                <a
+                <Link
                   href="/pricing"
                   className="block w-full bg-gray-200 hover:bg-blue-200 text-blue-800 py-3 px-5 rounded-lg font-bold text-base text-center transition"
+                  onClick={() => setIsOpen(false)}
                 >
-                  🔹 了解收費方案
-                </a>
+                </Link>
               </li>
             </ul>
             <button
-              className="block mx-auto mt-1 bg-yellow-400 text-white hover:text-blue-800 text-sm"
               onClick={() => setIsOpen(false)}
+              className="block w-full mt-2 py-2 rounded bg-gray-400 text-white font-bold text-lg hover:bg-gray-500 transition"
+              type="button"
             >
               關閉
             </button>
           </div>
         </div>
       )}
-      {/* 動畫css同上 */}
+
       <style>{`
         @keyframes fadeIn { from { opacity:0; transform: translateY(40px);} to{opacity:1; transform:none;}}
         @keyframes fadeInUp { from { opacity:0; transform: translateY(60px);} to{opacity:1; transform:none;}}
