@@ -112,13 +112,22 @@ export default function Home() {
             <div className="bg-teal-800 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
               <span
                 style={{
-                  WebkitTextStroke: '2px #fff',
-                  color: '#333',
+                  textShadow: `
+      1px 0 0 #fff,
+      -1px 0 0 #fff,
+      0 1px 0 #fff,
+      0 -1px 0 #fff,
+      1px 1px 0 #fff,
+      -1px -1px 0 #fff,
+      -1px 1px 0 #fff,
+      1px -1px 0 #fff
+    `
                 }}
                 className="text-4xl mb-3 drop-shadow"
               >
                 🔍
               </span>
+
               <span className="text-lg font-bold tracking-wide mb-1 text-white">找名片</span>
               <span className="text-xs text-cyan-100 text-center">快速搜尋、找人找公司</span>
             </div>
@@ -127,8 +136,16 @@ export default function Home() {
             <div className="bg-orange-500 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
               <span
                 style={{
-                  WebkitTextStroke: '2px #fff',
-                  color: '#333', // 原本字色，自行調整
+                  textShadow: `
+      1px 0 0 #fff,
+      -1px 0 0 #fff,
+      0 1px 0 #fff,
+      0 -1px 0 #fff,
+      1px 1px 0 #fff,
+      -1px -1px 0 #fff,
+      -1px 1px 0 #fff,
+      1px -1px 0 #fff
+    `
                 }}
                 className="text-4xl mb-3 drop-shadow"
               >
