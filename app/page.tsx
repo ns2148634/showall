@@ -109,14 +109,14 @@ export default function Home() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
           <Link href="/search" className="block">
-            <div className="bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
+            <div className="bg-teal-800 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
               <span className="text-4xl mb-3 drop-shadow">🔍</span>
               <span className="text-lg font-bold tracking-wide mb-1 text-white">找名片</span>
               <span className="text-xs text-cyan-100 text-center">快速搜尋、找人找公司</span>
             </div>
           </Link>
           <Link href="/upload" className="block">
-            <div className="bg-gradient-to-br from-yellow-400 to-pink-400 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
+            <div className="bg-orange-500 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
               <span className="text-4xl mb-3 drop-shadow">⏫</span>
               <span className="text-lg font-bold tracking-wide mb-1 text-white">上傳名片</span>
               <span className="text-xs text-pink-100 text-center">新創、商家與個人都能刊登</span>
