@@ -11,7 +11,13 @@ const PAGE_SIZE = 10
 export default function SearchPage() {
   const [showTipsModal, setShowTipsModal] = useState(false)
   useEffect(() => {
-    setTimeout(() => setShowTipsModal(true), 500)
+    // 彈窗只跳一次（用 localStorage 控制）
+    if (typeof window !== "undefined") {
+      if (!localStorage.getItem("search_modal_shown")) {
+        setTimeout(() => setShowTipsModal(true), 500)
+        localStorage.setItem("search_modal_shown", "1")
+      }
+    }
   }, [])
 
   const [keyword, setKeyword] = useState("")
@@ -66,7 +72,8 @@ export default function SearchPage() {
   useEffect(() => {
     if (!hasCondition) return
     fetchCards()
-  }, [page, order, selectedCity, selectedArea, keyword])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, order, selectedCity, selectedArea, keyword]) // 允許 fetchCards
 
   async function fetchCards() {
     setLoading(true)
@@ -88,8 +95,8 @@ export default function SearchPage() {
     }
     if (order === "created") query = query.order('created_at', { ascending: false })
     else if (order === "views") query = query.order('views', { ascending: false })
-    const from = (page-1)*PAGE_SIZE
-    const to = page*PAGE_SIZE-1
+    const from = (page - 1) * PAGE_SIZE
+    const to = page * PAGE_SIZE - 1
     const { data, count } = await query.range(from, to)
     setCards(data || [])
     setTotal(count || 0)
@@ -102,6 +109,10 @@ export default function SearchPage() {
     fetchCards()
   }
 
+  const handleCloseModal = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowTipsModal(false);
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
       {/* 搜尋技巧彈窗 */}
@@ -110,28 +121,27 @@ export default function SearchPage() {
           <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-gray-800 relative">
             <button
               className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
-              onClick={() => setShowTipsModal(false)}
+              onClick={handleCloseModal}
               title="關閉"
             >×</button>
             <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">搜尋技巧</h2>
             <div className="space-y-4 text-lg">
               <div>
-                <span className="font-bold text-blue-700">1. 關鍵字多元組合搜尋</span><br/>
+                <span className="font-bold text-blue-700">1. 關鍵字多元組合搜尋</span><br />
                 可用「保母」、「教練」、「美甲」、「南山人壽」、「房仲」等專業、公司、商品名稱搜尋。
               </div>
               <div>
-                <span className="font-bold text-blue-700">2. 地區</span><br/>
+                <span className="font-bold text-blue-700">2. 地區</span><br />
                 選擇所在地區，精準找在地專家或熱門服務商。
               </div>
               <div>
-                <span className="font-bold text-blue-700">3. 以公司、品牌、姓名都能搜尋</span><br/>
+                <span className="font-bold text-blue-700">3. 以公司、品牌、姓名都能搜尋</span><br />
                 例：找「TOYOTA、健身教練、舞蹈老師」都可直接輸入名稱，或用中文/英文查詢。
               </div>
-              
             </div>
             <button
               className="block w-full py-2 mt-6 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
-              onClick={() => setShowTipsModal(false)}
+              onClick={handleCloseModal}
             >知道了，開始搜尋</button>
           </div>
         </div>
@@ -144,7 +154,7 @@ export default function SearchPage() {
             maxLength={30}
             placeholder="關鍵字（姓名、簡介…）"
             className="border rounded p-2 w-44"
-            onChange={e=>setKeyword(e.target.value)}
+            onChange={e => setKeyword(e.target.value)}
           />
           <AreaSelector
             cities={cities}
@@ -154,7 +164,7 @@ export default function SearchPage() {
             selectedArea={selectedArea}
             setSelectedArea={setSelectedArea}
           />
-          <select className="p-2 rounded border" value={order} onChange={e=>setOrder(e.target.value)}>
+          <select className="p-2 rounded border" value={order} onChange={e => setOrder(e.target.value)}>
             <option value="random">隨機排序</option>
             <option value="created">刊登最近</option>
             <option value="views">瀏覽最多</option>
@@ -185,13 +195,13 @@ export default function SearchPage() {
         }
         {hasCondition &&
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
-              {Array.from({length: Math.ceil(total/PAGE_SIZE)}, (_,i) => (
-                <button
-                  key={i}
-                  className={`px-3 py-1 rounded ${page===i+1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
-                  onClick={()=>setPage(i+1)}
-                >{i+1}</button>
-              ))}
+            {Array.from({ length: Math.ceil(total / PAGE_SIZE) }, (_, i) => (
+              <button
+                key={i}
+                className={`px-3 py-1 rounded ${page === i + 1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
+                onClick={() => setPage(i + 1)}
+              >{i + 1}</button>
+            ))}
           </div>
         }
       </main>

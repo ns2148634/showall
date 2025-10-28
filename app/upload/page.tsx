@@ -1,276 +1,194 @@
 "use client";
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import AreaSelector from "@/components/AreaSelector";
 
-function UploadCardPageInner() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+type Card = {
+  id: number;
+  image_url_front: string;
+  url_slug: string;
+};
 
-  const [showTipsModal, setShowTipsModal] = useState(false);
-  useEffect(() => { setTimeout(() => setShowTipsModal(true), 500); }, []);
-  const [cities, setCities] = useState<string[]>([]);
-  const [areas, setAreas] = useState<string[]>([]);
-  const [form, setForm] = useState({
-    email: "",
-    company: "",
-    name: "",
-    citys: "",
-    area: "",
-    line: "",
-    mobile: "",
-    contact_other: "",
-    tag1: "",
-    tag2: "",
-    tag3: "",
-    tag4: "",
-    intro: "",
-    theme_color: "#FFFFFF",
-    image_url_front: "",
-    image_url_back: "",
-    referrer_slug: ""
-  });
-  const [imgFront, setImgFront] = useState<File | null>(null);
-  const [imgBack, setImgBack] = useState<File | null>(null);
-  const [previewFront, setPreviewFront] = useState<string>("");
-  const [previewBack, setPreviewBack] = useState<string>("");
-  const [msg, setMsg] = useState("");
-  const [loading, setLoading] = useState(false);
+export default function Home() {
+  const [cards, setCards] = useState<Card[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [totalCards, setTotalCards] = useState<number | null>(null);
 
-  const BG_COLORS = [
-    { color: "#FFFFFF", name: "白" },
-    { color: "#EAF6FF", name: "淺藍" },
-    { color: "#FFFBE0", name: "淺黃" },
-    { color: "#EBFAE0", name: "淺綠" },
-    { color: "#FFE5E5", name: "淺紅" },
-    { color: "#F4F4F5", name: "淺灰" }
-  ];
-
-  // 推薦人自動帶入
   useEffect(() => {
-    const ref = searchParams.get("referrer") || searchParams.get("referrer_slug");
-    if (ref) setForm(f => ({ ...f, referrer_slug: ref }));
-  }, [searchParams]);
-
-  // 城市「不排序」直接交給 AreaSelector
-  useEffect(() => {
-    async function fetchData() {
-      const { data: cityObjs } = await supabase.from('cities').select('citys');
-      const rawCities = Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)));
-      setCities(["全部", ...rawCities]);
+    async function fetchCards() {
+      const { data, error } = await supabase
+        .from("cards")
+        .select("id, image_url_front, url_slug")
+        .eq("published", true)
+        .order("created_at", { ascending: false })
+        .limit(10);
+      if (error) console.error("載入名片錯誤:", error.message);
+      if (data) setCards(data);
     }
-    fetchData();
+    fetchCards();
   }, []);
 
   useEffect(() => {
-    async function fetchAreas() {
-      if (!form.citys || form.citys === "全部") {
-        setAreas(["全部"]);
-        setForm(f => ({ ...f, area: "全部" }));
-        return;
-      }
-      const { data: ds } = await supabase
-        .from('cities').select('district').eq('citys', form.citys);
-      const uniqueAreas = Array.from(new Set(ds?.map(a => a.district).filter(Boolean))).sort();
-      setAreas(["全部", ...uniqueAreas]);
-      setForm(f => ({ ...f, area: "全部" }));
+    async function fetchTotalCards() {
+      const { count, error } = await supabase
+        .from("cards")
+        .select("id", { count: "exact", head: true })
+        .eq("published", true);
+      if (!error) setTotalCards(count ?? 0);
     }
-    fetchAreas();
-  }, [form.citys]);
+    fetchTotalCards();
+  }, []);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>, type: "front" | "back") {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const allowed = ["image/jpeg", "image/png", "image/webp"];
-    if (!allowed.includes(file.type)) { setMsg("只允許 JPG、PNG、WebP 格式"); return; }
-    if (file.size > 2 * 1024 * 1024) { setMsg("圖片需小於 2MB"); return; }
-    const img = new window.Image();
-    img.onload = () => {
-      let maxW = 1200, maxH = 720;
-      let w = img.width, h = img.height;
-      let ratio = Math.min(maxW / w, maxH / h, 1);
-      let nw = Math.round(w * ratio), nh = Math.round(h * ratio);
-      const canvas = document.createElement('canvas');
-      canvas.width = nw;
-      canvas.height = nh;
-      const ctx = canvas.getContext("2d");
-      ctx?.drawImage(img, 0, 0, nw, nh);
-      let outType = file.type === "image/webp" ? "image/webp" :
-        file.type === "image/png" ? "image/png" : "image/jpeg";
-      let dataUrl = canvas.toDataURL(outType, outType !== "image/png" ? 0.8 : 1);
-      if (type === "front") { setImgFront(file); setPreviewFront(dataUrl); }
-      else { setImgBack(file); setPreviewBack(dataUrl); }
-      setMsg("");
-    };
-    img.onerror = () => setMsg("圖片載入錯誤");
-    img.src = URL.createObjectURL(file);
-  }
+  // 彈窗只跳一次
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if (!localStorage.getItem("modal_shown")) {
+        setTimeout(() => setShowModal(true), 1000);
+        localStorage.setItem("modal_shown", "1");
+      }
+    }
+  }, []);
 
-  async function handlePublish() {
-    if (!form.email) { setMsg("請填寫電子信箱"); return; }
-    if (!previewFront) { setMsg("請上傳名片正面"); return; }
-    setMsg(""); setLoading(true);
-    // 上傳邏輯略
-    setLoading(false);
-  }
-
-  function handlePreview() {
-    if (!form.email) { setMsg("請填寫電子信箱"); return; }
-    if (!previewFront) { setMsg("請上傳名片正面"); return; }
-    setMsg(""); setLoading(true);
-    window.sessionStorage.setItem("previewForm", JSON.stringify(form));
-    window.sessionStorage.setItem("previewFront", previewFront);
-    window.sessionStorage.setItem("previewBack", previewBack);
-    router.push("/preview");
-  }
+  const handleCloseModal = (e: React.MouseEvent<HTMLButtonElement>) => {
+    setShowModal(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* 名片上傳技巧彈窗 */}
-      {showTipsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-gray-800 relative">
-            <button className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
-              onClick={() => setShowTipsModal(false)}
-              title="關閉">×</button>
-            <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">上傳名片技巧</h2>
-            <div className="space-y-4 text-lg">
-              <div><span className="font-bold text-blue-700">1. 個人簡介與經營項目要明確</span><br />寫清楚你的服務專長、特色及常用關鍵字（如：健康管理、美甲保險），越明確越容易被搜尋。</div>
-              <div><span className="font-bold text-blue-700">2. 聯絡方式詳細填寫</span><br />建議填全：Email、手機、LINE、Facebook、社群等通路，方便客戶聯絡。</div>
-              <div><span className="font-bold text-blue-700">3. 地區選精確</span><br />用戶常用地區分類搜尋，選擇越細曝光機會越高。</div>
-              <div><span className="font-bold text-green-700">4. 填得完整，系統推薦更容易到手！</span></div>
+      <main className="max-w-3xl mx-auto py-10">
+        {/* 活動 banner */}
+        <div className="mb-7">
+          <Link href="/activity" className="block">
+            <div
+              className="bg-yellow-300 rounded-lg px-6 py-4 text-xl font-bold text-gray-900 flex items-center justify-between hover:bg-yellow-400 shadow-lg"
+              style={{ border: "2px dashed #FFD600" }}
+            >
+              <span>
+                🎉 上傳名片抽 iPhone 17！距離開獎只差{" "}
+                <span className="text-red-700">
+                  {Math.max(0, 1000 - (totalCards ?? 0))}
+                </span>{" "}
+                張！
+              </span>
+              <span className="text-lg bg-white px-2 py-1 rounded font-bold text-yellow-600">
+                活動說明
+              </span>
             </div>
-            <button className="block w-full py-2 mt-6 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition" onClick={() => setShowTipsModal(false)}>知道了，開始編輯名片</button>
-          </div>
+          </Link>
         </div>
-      )}
 
-      <main className="max-w-lg mx-auto py-10">
-        <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={e => e.preventDefault()}>
-          {/* email欄 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">電子信箱 <span className="text-red-500">*</span></label>
-            <input type="email" className="border p-2 rounded w-full" required value={form.email} maxLength={120}
-              onChange={e => setForm(f => ({ ...f, email: e.target.value }))} placeholder="請輸入電子信箱" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">姓名/暱稱 <span className="text-gray-500 text-xs">(上限30字)</span></label>
-            <input type="text" className="border p-2 rounded w-full" value={form.name} maxLength={30}
-              onChange={e => setForm(f => ({ ...f, name: e.target.value }))} placeholder="請輸入姓名或暱稱" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">公司 / 組織 <span className="text-gray-500 text-xs">(上限20字)</span></label>
-            <input type="text" className="border p-2 rounded w-full" value={form.company} maxLength={20}
-              onChange={e => setForm(f => ({ ...f, company: e.target.value }))} placeholder="請輸入公司或組織團體名稱" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">LINE ID <span className="text-gray-500 text-xs">(上限30字)</span></label>
-            <input type="text" className="border p-2 rounded w-full" value={form.line} maxLength={30}
-              onChange={e => setForm(f => ({ ...f, line: e.target.value }))} placeholder="請輸入 LINE ID" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">手機 <span className="text-gray-500 text-xs">(上限20字)</span></label>
-            <input type="text" className="border p-2 rounded w-full" value={form.mobile} maxLength={20}
-              onChange={e => setForm(f => ({ ...f, mobile: e.target.value }))} placeholder="請輸入手機號碼" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">其他聯絡方式 <span className="text-gray-500 text-xs">(上限60字)</span></label>
-            <input type="text" className="border p-2 rounded w-full" value={form.contact_other} maxLength={60}
-              onChange={e => setForm(f => ({ ...f, contact_other: e.target.value }))} placeholder="可填 Instagram、Facebook 等" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">所在地區</label>
-            <AreaSelector
-              cities={cities}
-              selectedCity={form.citys}
-              setSelectedCity={val => setForm(f => ({ ...f, citys: val }))}
-              areas={areas}
-              selectedArea={form.area}
-              setSelectedArea={val => setForm(f => ({ ...f, area: val }))}
-            />
-          </div>
-          {/* 四個營業/經營項目 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">營業/經營項目 1</label>
-            <input type="text" className="border p-2 rounded w-full" value={form.tag1} maxLength={30}
-              onChange={e => setForm(f => ({ ...f, tag1: e.target.value }))} placeholder="如：美髮、修車、健身教練" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 2</label>
-            <input type="text" className="border p-2 rounded w-full" value={form.tag2} maxLength={30}
-              onChange={e => setForm(f => ({ ...f, tag2: e.target.value }))} placeholder="可留空" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 3</label>
-            <input type="text" className="border p-2 rounded w-full" value={form.tag3} maxLength={30}
-              onChange={e => setForm(f => ({ ...f, tag3: e.target.value }))} placeholder="可留空" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">經營項目 4</label>
-            <input type="text" className="border p-2 rounded w-full" value={form.tag4} maxLength={30}
-              onChange={e => setForm(f => ({ ...f, tag4: e.target.value }))} placeholder="可留空" />
-          </div>
-          {/* 自我簡介 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">簡介 / 服務特色</label>
-            <textarea
-              className="border p-2 rounded w-full"
-              maxLength={300}
-              rows={4}
-              value={form.intro}
-              onChange={e => setForm(f => ({ ...f, intro: e.target.value }))}
-              placeholder="請輸入你的自我介紹、專長或服務內容…"
-            />
-          </div>
-         
-          {/* 圖片區 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">名片正面 <span className="text-red-500">*</span></label>
-            <input type="file" accept="image/*"" onChange={e => handleFileChange(e, "front")} className="w-full" />
-            {previewFront && (
-              <div className="mt-2 flex justify-center">
-                <img src={previewFront} alt="預覽正面" className="w-32 rounded shadow hover:shadow-lg transition" style={{ objectFit: "contain" }} />
-              </div>
-            )}
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">名片背面</label>
-            <input type="file" accept="image/*" onChange={e => handleFileChange(e, "back")} className="w-full" />
-            {previewBack && (
-              <div className="mt-2 flex justify-center">
-                <img src={previewBack} alt="預覽背面" className="w-32 rounded shadow hover:shadow-lg transition" style={{ objectFit: "contain" }} />
-              </div>
-            )}
-          </div>
-          <button type="button" disabled={loading} className="w-full py-3 mt-6 rounded bg-blue-600 text-white text-lg font-bold hover:bg-blue-700 transition disabled:opacity-50" onClick={handlePreview}>
-            預覽名片
-          </button>
-          {msg && (
-            <div className={`mt-3 text-center font-bold ${msg.includes('成功') ? "text-green-600" : "text-red-500"}`}>
-              {msg}
+        {/* 彈跳視窗：名片上架提醒 */}
+        {showModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-gray-800 relative">
+              <button
+                className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
+                onClick={handleCloseModal}
+                title="關閉"
+              >
+                ×
+              </button>
+              <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">
+                🪪 名片上架小提醒
+              </h2>
+
+              <p className="text-center text-gray-700 mb-5">
+                上架費用：<span className="font-bold text-red-600">100 元 / 年</span>
+                <br />
+                一次上架，全年曝光！
+              </p>
+
+              <ul className="mb-6 space-y-3 text-base leading-relaxed">
+                <li>
+                  1️⃣ <span className="font-bold">個人簡介與經營項目要明確：</span>
+                  寫出你的服務專長、特色與關鍵字（例：健康管理、美甲、保險、設計），
+                  越明確越容易被搜尋。
+                </li>
+                <li>
+                  2️⃣ <span className="font-bold">聯絡方式要完整：</span>
+                  建議填寫 Email、手機、LINE、Facebook、Instagram 等，
+                  讓客戶能快速聯絡到你。
+                </li>
+                <li>
+                  3️⃣ <span className="font-bold">地區分類選精確：</span>
+                  多數用戶會依地區搜尋，地點選越細，曝光機會越高。
+                </li>
+                <li>
+                  4️⃣ <span className="font-bold">填得越完整，推薦越優先：</span>
+                  系統會優先推薦內容詳實、專業清晰的名片。
+                </li>
+              </ul>
+
+              <button
+                className="block w-full py-2 mt-4 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
+                onClick={handleCloseModal}
+              >
+                知道了，開始探索
+              </button>
             </div>
-            
-          )}
-           {/* 推薦人 */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">推薦人專屬碼（自動填入）</label>
-            <input type="text" name="referrer_slug" value={form.referrer_slug} readOnly className="border p-2 rounded w-full bg-gray-50" placeholder="由推薦人連結自動填入" />
-            <p className="text-xs text-gray-500 mt-1">如果你是朋友推薦進來，這裡會自動帶入推薦專屬碼。</p>
           </div>
-        </form>
+        )}
+
+        {/* 功能入口按鈕 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+          <Link href="/search" className="block">
+            <div className="bg-gradient-to-br from-blue-500 to-cyan-400 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
+              <span className="text-4xl mb-3 drop-shadow">🔍</span>
+              <span className="text-lg font-bold tracking-wide mb-1 text-white">
+                找名片
+              </span>
+              <span className="text-xs text-cyan-100 text-center">
+                快速搜尋、找人找公司
+              </span>
+            </div>
+          </Link>
+
+          <Link href="/upload" className="block">
+            <div className="bg-gradient-to-br from-yellow-400 to-pink-400 rounded-2xl px-0 py-8 shadow-2xl flex flex-col items-center transition-transform hover:scale-105 active:scale-95 cursor-pointer">
+              <span className="text-4xl mb-3 drop-shadow">⏫</span>
+              <span className="text-lg font-bold tracking-wide mb-1 text-white">
+                100元上架名片
+              </span>
+              <span className="text-xs text-pink-100 text-center">
+                新創、商家與個人都能刊登
+              </span>
+            </div>
+          </Link>
+        </div>
+
+        {/* 最新推薦名片 */}
+        <h3 className="text-lg font-bold mb-6 text-gray-700">最新推薦名片</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
+          {cards.length > 0 ? (
+            cards.map((card) => (
+              <Link href={`/card/${card.url_slug}`} key={card.id} className="block">
+                <Image
+                  src={card.image_url_front}
+                  alt="名片正面"
+                  width={180}
+                  height={110}
+                  className="mx-auto object-cover rounded"
+                  style={{
+                    boxShadow: "none",
+                    borderRadius: "10px",
+                    background: "#fff",
+                    maxHeight: 140,
+                  }}
+                />
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-full text-center text-gray-400 py-12">
+              暫無名片
+            </div>
+          )}
+        </div>
       </main>
+
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
         &copy; 2025 SHOWALL 名片+
       </footer>
     </div>
-  );
-}
-
-export default function UploadCardPage() {
-  return (
-    <Suspense>
-      <UploadCardPageInner />
-    </Suspense>
   );
 }
