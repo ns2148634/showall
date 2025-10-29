@@ -13,19 +13,14 @@ function PaymentPageInner() {
   const searchParams = useSearchParams();
   const cardId = searchParams.get("card_id");
   const [method, setMethod] = useState<"opay" | "bank">("bank");
-  const [remit, setRemit] = useState<{
-  email: string;
-  amount: number;
-  code: string;
-  time: string;
-  receipt: File | null;
-}>({
+  const [remit, setRemit] = useState({
   email: "",
   amount: 100,
   code: "",
   time: "",
-  receipt: null,
+  receipt: null as File | null,
 });
+
 
 
   const [msg, setMsg] = useState("");
