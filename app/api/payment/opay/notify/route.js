@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import { sendMail } from '@/lib/sendMail' // 直接用 nodemailer 的 utility
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -38,19 +37,24 @@ export async function POST(request) {
       .eq("id", cardId)
   }
 
-  // 3. 自動寄 Email 通知用戶和客服
+  // 3. 自動寄 Email 通知用戶和客服（用 fetch 呼叫 sendmail API）
   if (payment) {
-    // 用戶通知
-    await sendMail({
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.showall.tw";
+    const payloadUser = {
       to: payment.email,
       subject: "SHOWALL名片+付款完成通知",
       html: `
         <div>親愛的會員您好，</div>
         <div>您的付款已完成，名片已自動上架！感謝您的支持。</div>
       `
-    })
-    // 站長通知
-    await sendMail({
+    };
+    await fetch(`${siteUrl}/api/sendmail`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payloadUser)
+    });
+
+    const payloadAdmin = {
       to: "service@showall.tw",
       subject: "用戶完成付款（SHOWALL名片+）",
       html: `
@@ -58,7 +62,12 @@ export async function POST(request) {
         <div>名片ID：${cardId}</div>
         <div>金額：${payment.amount}，已成功付款。</div>
       `
-    })
+    };
+    await fetch(`${siteUrl}/api/sendmail`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payloadAdmin)
+    });
   }
 
   // OPay 必須收到 "SUCCESS" 才不會重複呼叫

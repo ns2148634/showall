@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
 import SideFabContact from "../components/SideFabContact";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +48,8 @@ export default function RootLayout({
         {/* 主內容（各頁內容） */}
         {children}
         <SideFabContact />
+        <SpeedInsights />
+        
       </body>
     </html>
   );
