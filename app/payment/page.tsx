@@ -18,7 +18,7 @@ function PaymentPageInner() {
     amount: number;
     code: string;
     time: string;
-    receipt: null | File;
+    receipt: File | null;
   }>({
     email: "",
     amount: 100,
