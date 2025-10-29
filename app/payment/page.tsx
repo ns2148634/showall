@@ -192,7 +192,7 @@ function PaymentPageInner() {
               }`}
             onClick={() => setMethod("opay")}
           >
-            歐付寶線上支付
+            線上支付
           </button>
           <button
             className={`py-2 px-6 rounded-lg font-bold border ${method === "bank"
