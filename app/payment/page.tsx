@@ -21,7 +21,7 @@ const BANK_INFO = {
 function PaymentPageInner() {
   const searchParams = useSearchParams();
   const cardId = searchParams.get("card_id");
-  const [method, setMethod] = useState<"opay" | "bank">("bank");
+  const [method, setMethod] = useState<"opay" | "bank">("opay");
   const initialRemit: RemitState = {
     email: "",
     amount: 100,
@@ -42,15 +42,15 @@ function PaymentPageInner() {
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-  const files = e.target.files;
-  if (files && files[0]) {
-    const file = files[0];
-    setRemit((r) => ({ ...r, receipt: file }));
-    const reader = new FileReader();
-    reader.onload = (ev) => setPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files && files[0]) {
+      const file = files[0];
+      setRemit((r) => ({ ...r, receipt: file }));
+      const reader = new FileReader();
+      reader.onload = (ev) => setPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
+    }
   }
-}
 
 
   // 銀行匯款流程
