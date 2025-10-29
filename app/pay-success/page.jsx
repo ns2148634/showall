@@ -4,11 +4,19 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import { Suspense } from "react";
+import PaySuccessClient from "./PaySuccessClient";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
-
+export default function PaySuccessPage() {
+  return (
+    <Suspense>
+      <PaySuccessClient />
+    </Suspense>
+  );
+}
 export default function PaySuccessPage() {
   const searchParams = useSearchParams();
   const card_id = searchParams.get('card_id');
