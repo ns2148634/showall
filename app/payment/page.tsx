@@ -3,6 +3,15 @@ import { useState, Suspense, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+// 頂部定義 RemitState 型別
+interface RemitState {
+  email: string;
+  amount: number;
+  code: string;
+  time: string;
+  receipt: File | null;
+}
+
 const BANK_INFO = {
   bank: "玉山銀行",
   code: "808",
@@ -13,26 +22,17 @@ function PaymentPageInner() {
   const searchParams = useSearchParams();
   const cardId = searchParams.get("card_id");
   const [method, setMethod] = useState<"opay" | "bank">("bank");
-  const [remit, setRemit] = useState<{
-    email: string;
-    amount: number;
-    code: string;
-    time: string;
-    receipt: File | null;
-  }>({
+  const [remit, setRemit] = useState<RemitState>({
     email: "",
     amount: 100,
     code: "",
     time: "",
     receipt: null,
   });
-
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState("");
   const [submitted, setSubmitted] = useState(false);
-
-  // 用於插入 OPay 表單
   const formRef = useRef<HTMLDivElement>(null);
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -43,7 +43,7 @@ function PaymentPageInner() {
     const files = e.target.files;
     if (files && files[0]) {
       const file = files[0];
-      setRemit((r) => ({ ...r, receipt: file }));
+      setRemit((r: RemitState) => ({ ...r, receipt: file }));
       const reader = new FileReader();
       reader.onload = (ev) => setPreview(ev.target?.result as string);
       reader.readAsDataURL(file);
@@ -148,10 +148,8 @@ function PaymentPageInner() {
       setMsg("請正確填寫 Email！");
       return;
     }
-
     setLoading(true);
     try {
-      // 呼叫後端產生 OPay 參數與表單
       const res = await fetch("/api/payment/opay", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -163,11 +161,10 @@ function PaymentPageInner() {
       });
       const data = await res.json();
       if (data.html) {
-        // 插入自動跳轉表單
-        if (formRef.current) formRef.current.innerHTML = ""; // 清空
+        if (formRef.current) formRef.current.innerHTML = "";
         setTimeout(() => {
           if (formRef.current) formRef.current.innerHTML = data.html;
-        }, 20); // 插入自動送出表單
+        }, 20);
         setMsg("正在跳轉付款頁…");
       } else {
         setMsg("串接付款失敗，請聯絡客服");
@@ -186,19 +183,21 @@ function PaymentPageInner() {
         </h2>
         <div className="flex gap-3 justify-center mb-3">
           <button
-            className={`py-2 px-6 rounded-lg font-bold border ${method === "opay"
-              ? "bg-blue-500 border-blue-700 text-white"
-              : "bg-gray-200 border-gray-400 text-gray-700"
-              }`}
+            className={`py-2 px-6 rounded-lg font-bold border ${
+              method === "opay"
+                ? "bg-blue-500 border-blue-700 text-white"
+                : "bg-gray-200 border-gray-400 text-gray-700"
+            }`}
             onClick={() => setMethod("opay")}
           >
             歐付寶線上支付
           </button>
           <button
-            className={`py-2 px-6 rounded-lg font-bold border ${method === "bank"
-              ? "bg-green-500 border-green-700 text-white"
-              : "bg-gray-200 border-gray-400 text-gray-700"
-              }`}
+            className={`py-2 px-6 rounded-lg font-bold border ${
+              method === "bank"
+                ? "bg-green-500 border-green-700 text-white"
+                : "bg-gray-200 border-gray-400 text-gray-700"
+            }`}
             onClick={() => setMethod("bank")}
           >
             銀行匯款
@@ -251,15 +250,104 @@ function PaymentPageInner() {
 
         {method === "bank" && (
           <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-            {/* ...（銀行匯款原本內容同上） */}
-            {/* 略 */}
+            <div>
+              <label className="font-bold text-gray-700 block mb-1">
+                上架時填寫的 Email
+                <span className="text-red-500">*</span>
+              </label>
+              <input
+                name="email"
+                type="email"
+                className="border rounded px-3 py-2 w-full"
+                value={remit.email}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="bg-gray-50 px-3 py-3 rounded-lg my-1">
+              <div className="mb-1 text-gray-700">請匯款至：</div>
+              <div className="font-bold text-lg text-gray-900">
+                【{BANK_INFO.bank}】{BANK_INFO.code}
+              </div>
+              <div className="font-mono text-base select-all text-blue-700">
+                {BANK_INFO.account}
+              </div>
+            </div>
+            <div>
+              <label className="font-bold text-gray-700 block mb-1">
+                匯款金額
+              </label>
+              <input
+                name="amount"
+                className="border rounded px-3 py-2 w-full"
+                type="number"
+                value={remit.amount}
+                disabled
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700 block mb-1">
+                匯款帳號後五碼<span className="text-red-500">*</span>
+              </label>
+              <input
+                name="code"
+                className="border rounded px-3 py-2 w-full"
+                maxLength={5}
+                value={remit.code}
+                inputMode="numeric"
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700 block mb-1">
+                匯款時間（必填）
+              </label>
+              <input
+                name="time"
+                className="border rounded px-3 py-2 w-full"
+                type="datetime-local"
+                value={remit.time}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div>
+              <label className="font-bold text-gray-700 block mb-1">
+                上傳匯款憑證（可選）
+              </label>
+              <input type="file" accept="image/*" onChange={handleFile} />
+              {preview && (
+                <img
+                  src={preview}
+                  alt="匯款憑證"
+                  className="mt-2 rounded shadow w-36"
+                />
+              )}
+            </div>
+            <button
+              type="submit"
+              className="w-full py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition mt-2"
+              disabled={loading}
+            >
+              {loading ? "提交中..." : "提交匯款資料"}
+            </button>
+            {msg && (
+              <div
+                className={`text-center mt-2 font-bold ${
+                  submitted ? "text-green-600" : "text-red-500"
+                }`}
+              >
+                {msg}
+              </div>
+            )}
           </form>
         )}
 
         <div className="text-center text-gray-400 text-sm pt-4 border-t mt-6">
           若有任何問題請聯繫客服：
           <a href="mailto:service@showall.tw" className="text-blue-600 hover:underline">
-            [service@showall.tw](mailto:service@showall.tw)
+            service@showall.tw
           </a>
         </div>
       </div>
