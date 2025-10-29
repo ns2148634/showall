@@ -1,5 +1,5 @@
 // /app/pay-success/page.jsx
-'use client';
+"use client";
 
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
