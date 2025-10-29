@@ -43,7 +43,7 @@ function PaymentPageInner() {
     const files = e.target.files;
     if (files && files[0]) {
       const file = files[0];
-      setRemit(r => ({ ...r, receipt: file }))
+      setRemit(r => ({ ...r, receipt: file }));
       const reader = new FileReader();
       reader.onload = (ev) => setPreview(ev.target?.result as string);
       reader.readAsDataURL(file);
@@ -184,8 +184,8 @@ function PaymentPageInner() {
         <div className="flex gap-3 justify-center mb-3">
           <button
             className={`py-2 px-6 rounded-lg font-bold border ${method === "opay"
-                ? "bg-blue-500 border-blue-700 text-white"
-                : "bg-gray-200 border-gray-400 text-gray-700"
+              ? "bg-blue-500 border-blue-700 text-white"
+              : "bg-gray-200 border-gray-400 text-gray-700"
               }`}
             onClick={() => setMethod("opay")}
           >
@@ -193,8 +193,8 @@ function PaymentPageInner() {
           </button>
           <button
             className={`py-2 px-6 rounded-lg font-bold border ${method === "bank"
-                ? "bg-green-500 border-green-700 text-white"
-                : "bg-gray-200 border-gray-400 text-gray-700"
+              ? "bg-green-500 border-green-700 text-white"
+              : "bg-gray-200 border-gray-400 text-gray-700"
               }`}
             onClick={() => setMethod("bank")}
           >
