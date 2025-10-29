@@ -22,13 +22,15 @@ function PaymentPageInner() {
   const searchParams = useSearchParams();
   const cardId = searchParams.get("card_id");
   const [method, setMethod] = useState<"opay" | "bank">("bank");
-  const [remit, setRemit] = useState<RemitState>({
+  const initialRemit: RemitState = {
     email: "",
     amount: 100,
     code: "",
     time: "",
     receipt: null,
-  });
+  };
+  const [remit, setRemit] = useState<RemitState>(initialRemit);
+
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState("");
@@ -40,15 +42,16 @@ function PaymentPageInner() {
   }
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (files && files[0]) {
-      const file = files[0];
-      setRemit(r => ({ ...r, receipt: file }));
-      const reader = new FileReader();
-      reader.onload = (ev) => setPreview(ev.target?.result as string);
-      reader.readAsDataURL(file);
-    }
+  const files = e.target.files;
+  if (files && files[0]) {
+    const file = files[0];
+    setRemit((r) => ({ ...r, receipt: file }));
+    const reader = new FileReader();
+    reader.onload = (ev) => setPreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
   }
+}
+
 
   // 銀行匯款流程
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
