@@ -35,54 +35,40 @@ export default function AdminPaymentsPage() {
       .select('*')
       .eq('status', 'pending')
       .order('created_at', { ascending: false });
-    
     setPayments(data || []);
   }
 
-  async function approvePayment(payment: Payment) {
-    if (!confirm(`確認審核通過？\nEmail: ${payment.email}\n金額: ${payment.amount}`)) return;
-
+  // 收款確認：對 card_id 設定 payment_status 為 pending
+  async function confirmPayment(cardId: number) {
     setLoading(true);
-
-    try {
-      // 1. 更新 card 為已發佈
-      await supabase
-        .from('cards')
-        .update({ published: true })
-        .eq('id', payment.card_id);
-
-      // 2. 更新 payment 狀態
-      await supabase
-        .from('payments')
-        .update({ status: 'completed' })
-        .eq('id', payment.id);
-
-      // 3. 更新 referral 狀態（如果有推薦人）
-      await supabase
-        .from('referrals')
-        .update({ status: 'completed' })
-        .eq('referee_card_id', payment.card_id);
-
-      alert('✅ 審核完成！名片已上線');
-      fetchPendingPayments(); // 重新載入列表
-    } catch (err) {
-      console.error(err);
-      alert('❌ 審核失敗');
-    } finally {
-      setLoading(false);
+    const { error } = await supabase
+      .from('cards')
+      .update({ payment_status: 'pending' })
+      .eq('id', cardId);
+    setLoading(false);
+    if (error) {
+      alert('收款確認失敗');
+    } else {
+      alert('收款狀態已設為 pending');
+      fetchPendingPayments();
     }
   }
 
-  async function rejectPayment(payment: Payment) {
-    if (!confirm(`確認拒絕此筆付款？\nEmail: ${payment.email}`)) return;
-
-    await supabase
-      .from('payments')
-      .update({ status: 'rejected' })
-      .eq('id', payment.id);
-
-    alert('已拒絕');
-    fetchPendingPayments();
+  // 審查通過：對 card_id 設定 published 為 true
+  async function approveCard(cardId: number) {
+    if (!confirm('確定要讓這張名片上線嗎？')) return;
+    setLoading(true);
+    const { error } = await supabase
+      .from('cards')
+      .update({ published: true })
+      .eq('id', cardId);
+    setLoading(false);
+    if (error) {
+      alert('審查通過失敗');
+    } else {
+      alert('✅ 名片已上線');
+      fetchPendingPayments();
+    }
   }
 
   // 未登入顯示密碼輸入頁面
@@ -129,7 +115,6 @@ export default function AdminPaymentsPage() {
             登出
           </button>
         </div>
-        
         {payments.length === 0 && (
           <div className="text-center text-gray-500 py-10">
             目前沒有待審核的付款
@@ -163,9 +148,9 @@ export default function AdminPaymentsPage() {
                 {payment.receipt_url && (
                   <div>
                     <div className="text-sm text-gray-600">匯款憑證</div>
-                    <a 
-                      href={payment.receipt_url} 
-                      target="_blank" 
+                    <a
+                      href={payment.receipt_url}
+                      target="_blank"
                       className="text-blue-600 hover:underline"
                     >
                       查看圖片
@@ -173,21 +158,21 @@ export default function AdminPaymentsPage() {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex gap-3">
                 <button
-                  onClick={() => approvePayment(payment)}
+                  onClick={() => confirmPayment(payment.card_id)}
+                  disabled={loading}
+                  className="px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 disabled:opacity-50"
+                >
+                  收款確認
+                </button>
+                <button
+                  onClick={() => approveCard(payment.card_id)}
                   disabled={loading}
                   className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                 >
-                  ✅ 審核通過
-                </button>
-                <button
-                  onClick={() => rejectPayment(payment)}
-                  disabled={loading}
-                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
-                >
-                  ❌ 拒絕
+                  ✅ 審查通過
                 </button>
               </div>
             </div>

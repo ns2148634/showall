@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
 type Card = {
@@ -29,6 +30,11 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
   const [msg, setMsg] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
 
+  // 加入搜尋參數取回來源查詢頁
+  const searchParams = useSearchParams();
+  const from = searchParams.get("from");
+  const router = useRouter();
+
   useEffect(() => {
     async function fetchCard() {
       const { data, error } = await supabase
@@ -47,9 +53,10 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
   }, [params.url_slug]);
 
   // 推薦邀請連結
-  const referralUrl = typeof window !== "undefined"
-    ? `${window.location.origin}/upload?referrer=${card?.url_slug ?? ""}`
-    : "";
+  const referralUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/upload?referrer=${card?.url_slug ?? ""}`
+      : "";
 
   function handleShare() {
     window.open(referralUrl, "_blank");
@@ -69,7 +76,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     }
     setEmailLoading(true);
 
-    // 查詢已完成推薦數（抽獎次數）
     const { count } = await supabase
       .from('referrals')
       .select('*', { count: 'exact', head: true })
@@ -93,7 +99,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
       本信件由系統產生，如非本人請忽略。
     </div>
   </div>
-`
+  `
       }),
     });
     setEmailLoading(false);
@@ -182,7 +188,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         )}
       </div>
 
-
       {/* 推薦邀請區塊 */}
       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-5 mt-6 w-full max-w-md">
         <h3 className="font-bold text-blue-900 text-lg mb-2">💰 邀請朋友上傳名片</h3>
@@ -241,10 +246,19 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         </div>
       )}
 
-      {/* 返回首頁 */}
-      <Link href="/" className="mt-8 text-blue-600 hover:underline font-medium">
-        ⬅️ 回首頁
-      </Link>
+      {/* 返回上一頁搜尋結果 */}
+      {from ? (
+        <button
+          className="mt-8 text-blue-600 hover:underline font-medium"
+          onClick={() => router.replace(from)}
+        >
+          ⬅️ 返回搜尋結果
+        </button>
+      ) : (
+        <Link href="/" className="mt-8 text-blue-600 hover:underline font-medium">
+          ⬅️ 回首頁
+        </Link>
+      )}
     </div>
   );
 }
