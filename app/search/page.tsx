@@ -1,47 +1,43 @@
-"use client"
-import { useEffect, useState } from "react"
-import Link from "next/link"
-import Image from "next/image"
-import { supabase } from "@/lib/supabaseClient"
-import AreaSelector from "@/components/AreaSelector"
-import RandomCards from "@/components/RandomCards"
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient";
+import AreaSelector from "@/components/AreaSelector";
+import RandomCards from "@/components/RandomCards";
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 10;
 
 export default function SearchPage() {
-  const [showTipsModal, setShowTipsModal] = useState(false)
+  const [showTipsModal, setShowTipsModal] = useState(false);
   useEffect(() => {
-    // 彈窗只跳一次（用 localStorage 控制）
     if (typeof window !== "undefined") {
       if (!localStorage.getItem("search_modal_shown")) {
-        setTimeout(() => setShowTipsModal(true), 500)
-        localStorage.setItem("search_modal_shown", "1")
+        setTimeout(() => setShowTipsModal(true), 500);
+        localStorage.setItem("search_modal_shown", "1");
       }
     }
-  }, [])
+  }, []);
 
-  const [keyword, setKeyword] = useState("")
-  const [cities, setCities] = useState<string[]>([])
-  const [areas, setAreas] = useState<string[]>([])
-  const [selectedCity, setSelectedCity] = useState("全部")
-  const [selectedArea, setSelectedArea] = useState("全部")
-  const [order, setOrder] = useState("random")
-  const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const [cards, setCards] = useState<any[]>([])
-  const [loading, setLoading] = useState(false)
+  const [keyword, setKeyword] = useState("");
+  const [cities, setCities] = useState<string[]>([]);
+  const [areas, setAreas] = useState<string[]>([]);
+  const [selectedCity, setSelectedCity] = useState("全部");
+  const [selectedArea, setSelectedArea] = useState("全部");
+  const [order, setOrder] = useState("random");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [cards, setCards] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchCities() {
-      const { data: cityObjs } = await supabase
-        .from('cities')
-        .select('citys')
-      const uniqueCities = Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean)))
-        .sort()
+      const { data: cityObjs } = await supabase.from('cities').select('citys');
+      const uniqueCities = Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean))).sort();
       setCities(["全部", ...uniqueCities]);
     }
-    fetchCities()
-  }, [])
+    fetchCities();
+  }, []);
 
   useEffect(() => {
     async function fetchAreas() {
@@ -50,36 +46,32 @@ export default function SearchPage() {
         setSelectedArea("全部");
         return;
       }
-      const { data: ds } = await supabase
-        .from('cities')
-        .select('district')
-        .eq('citys', selectedCity)
-      const uniqueAreas = Array.from(new Set(ds?.map(a => a.district).filter(Boolean)))
-        .sort()
-      setAreas(["全部", ...uniqueAreas])
-      setSelectedArea("全部")
+      const { data: ds } = await supabase.from('cities').select('district').eq('citys', selectedCity);
+      const uniqueAreas = Array.from(new Set(ds?.map(a => a.district).filter(Boolean))).sort();
+      setAreas(["全部", ...uniqueAreas]);
+      setSelectedArea("全部");
     }
-    fetchAreas()
-  }, [selectedCity])
+    fetchAreas();
+  }, [selectedCity]);
 
   const hasCondition =
     keyword.trim() ||
     (selectedCity && selectedCity !== "全部") ||
     (selectedArea && selectedArea !== "全部") ||
     order !== "random" ||
-    page > 1
+    page > 1;
 
   useEffect(() => {
-    if (!hasCondition) return
-    fetchCards()
+    if (!hasCondition) return;
+    fetchCards();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, order, selectedCity, selectedArea, keyword]) // 允許 fetchCards
+  }, [page, order, selectedCity, selectedArea, keyword]); // 允許 fetchCards
 
   async function fetchCards() {
-    setLoading(true)
-    let query = supabase.from('cards').select('*', { count: "exact" }).eq('published', true)
-    if (selectedCity !== "全部") query = query.eq('citys', selectedCity)
-    if (selectedArea !== "全部") query = query.eq('area', selectedArea)
+    setLoading(true);
+    let query = supabase.from('cards').select('*', { count: "exact" }).eq('published', true);
+    if (selectedCity !== "全部") query = query.eq('citys', selectedCity);
+    if (selectedArea !== "全部") query = query.eq('area', selectedArea);
     if (keyword.trim()) {
       query = query.or([
         `name.ilike.%${keyword.trim()}%`,
@@ -91,26 +83,32 @@ export default function SearchPage() {
         `intro.ilike.%${keyword.trim()}%`,
         `citys.ilike.%${keyword.trim()}%`,
         `area.ilike.%${keyword.trim()}%`
-      ].join(','))
+      ].join(','));
     }
-    if (order === "created") query = query.order('created_at', { ascending: false })
-    else if (order === "views") query = query.order('views', { ascending: false })
-    const from = (page - 1) * PAGE_SIZE
-    const to = page * PAGE_SIZE - 1
-    const { data, count } = await query.range(from, to)
-    setCards(data || [])
-    setTotal(count || 0)
-    setLoading(false)
+    if (order === "created") query = query.order('created_at', { ascending: false });
+    else if (order === "views") query = query.order('views', { ascending: false });
+    const from = (page - 1) * PAGE_SIZE;
+    const to = page * PAGE_SIZE - 1;
+    const { data, count } = await query.range(from, to);
+    setCards(data || []);
+    setTotal(count || 0);
+    setLoading(false);
   }
 
   function doSearch(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setPage(1)
-    fetchCards()
+    e.preventDefault();
+    setPage(1);
+    fetchCards();
   }
 
   const handleCloseModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setShowTipsModal(false);
+  }
+
+  // 取得當前頁面 URL 給個人名片頁做 from 參數
+  let currentUrl = "/";
+  if (typeof window !== "undefined") {
+    currentUrl = window.location.pathname + window.location.search;
   }
 
   return (
@@ -119,30 +117,16 @@ export default function SearchPage() {
       {showTipsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-2xl max-w-md w-full p-8 text-gray-800 relative">
-            <button
-              className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
-              onClick={handleCloseModal}
-              title="關閉"
-            >×</button>
+            <button className="absolute top-3 right-4 text-2xl text-gray-400 hover:text-red-600"
+              onClick={handleCloseModal} title="關閉">×</button>
             <h2 className="text-2xl font-bold mb-4 text-blue-700 text-center">搜尋技巧</h2>
             <div className="space-y-4 text-lg">
-              <div>
-                <span className="font-bold text-blue-700">1. 關鍵字多元組合搜尋</span><br />
-                可用「保母」、「教練」、「美甲」、「南山人壽」、「房仲」等專業、公司、商品名稱搜尋。
-              </div>
-              <div>
-                <span className="font-bold text-blue-700">2. 地區</span><br />
-                選擇所在地區，精準找在地專家或熱門服務商。
-              </div>
-              <div>
-                <span className="font-bold text-blue-700">3. 以公司、品牌、姓名都能搜尋</span><br />
-                例：找「TOYOTA、健身教練、舞蹈老師」都可直接輸入名稱，或用中文/英文查詢。
-              </div>
+              <div><span className="font-bold text-blue-700">1. 關鍵字多元組合搜尋</span><br />可用「保母」、「教練」、「美甲」、「南山人壽」、「房仲」等專業、公司、商品名稱搜尋。</div>
+              <div><span className="font-bold text-blue-700">2. 地區</span><br />選擇所在地區，精準找在地專家或熱門服務商。</div>
+              <div><span className="font-bold text-blue-700">3. 以公司、品牌、姓名都能搜尋</span><br />例：找「TOYOTA、健身教練、舞蹈老師」都可直接輸入名稱，或用中文/英文查詢。</div>
             </div>
-            <button
-              className="block w-full py-2 mt-6 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
-              onClick={handleCloseModal}
-            >知道了，開始搜尋</button>
+            <button className="block w-full py-2 mt-6 rounded bg-blue-600 text-white font-bold text-lg hover:bg-blue-700 transition"
+              onClick={handleCloseModal}>知道了，開始搜尋</button>
           </div>
         </div>
       )}
@@ -176,7 +160,10 @@ export default function SearchPage() {
         {hasCondition &&
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
             {cards.map(card => (
-              <Link key={card.id} href={`/card/${card.url_slug}`}>
+              <Link
+                key={card.id}
+                href={`/card/${card.url_slug}?from=${encodeURIComponent(currentUrl)}`}
+              >
                 <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center p-4">
                   <Image
                     src={card.image_url_front}
@@ -209,5 +196,5 @@ export default function SearchPage() {
         &copy; 2025 SHOWALL 名片+
       </footer>
     </div>
-  )
+  );
 }

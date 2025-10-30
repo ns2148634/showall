@@ -30,10 +30,14 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
   const [msg, setMsg] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
 
-  // 加入搜尋參數取回來源查詢頁
+  // 取出 from 參數
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
   const router = useRouter();
+  // 名片網址
+  const cardUrl = typeof window !== "undefined"
+    ? `${window.location.origin}/card/${card?.url_slug ?? ""}`
+    : "";
 
   useEffect(() => {
     async function fetchCard() {
@@ -52,7 +56,6 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     fetchCard();
   }, [params.url_slug]);
 
-  // 推薦邀請連結
   const referralUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/upload?referrer=${card?.url_slug ?? ""}`
@@ -67,8 +70,22 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     setMsg("✅ 已複製推薦連結！邀請朋友上傳成功，抽獎機會+1");
     setTimeout(() => setMsg(""), 3000);
   }
-
-  // 專屬推薦統計 email 流程
+  function handleShareCardUrl() {
+    // 支援 Web Share API（行動裝置）
+    if (navigator.share) {
+      navigator.share({
+        title: `${card?.name} 的名片`,
+        text: `這是我的名片，歡迎聯絡！`,
+        url: cardUrl,
+      });
+      setMsg("已開啟分享面板！");
+    } else {
+      // 複製到剪貼簿
+      navigator.clipboard.writeText(cardUrl);
+      setMsg("✅ 已複製名片網址，可貼給朋友");
+      setTimeout(() => setMsg(""), 3000);
+    }
+  }
   async function handleSendStatsEmail() {
     if (!card?.email || !card?.url_slug) {
       setMsg("未取得 email，請稍後重試！");
@@ -209,13 +226,20 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
           </button>
         </div>
         <button
+          onClick={handleShareCardUrl}
+          className="w-full py-3 rounded-lg bg-blue-700 text-white font-bold text-lg mt-5 hover:bg-blue-900 transition"
+        >
+          分享我的名片
+        </button>
+
+        <button
           onClick={handleShare}
           className="w-full py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition"
         >
           我也要上傳
         </button>
 
-        {/* 加上推薦邀請連結的 QRCode 圖片 */}
+        {/* 推薦邀請連結的 QRCode 圖片 */}
         <div className="mt-6 flex flex-col items-center gap-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
           <div className="text-sm text-gray-700 font-bold mb-2">推薦連結 QR Code</div>
           <img
