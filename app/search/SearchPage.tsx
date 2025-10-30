@@ -182,23 +182,25 @@ export default function SearchPage() {
         {hasCondition &&
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
             {cards.map(card => (
-              <Link
-                key={card.id}
-                href={`/card/${card.url_slug}?from=${encodeURIComponent(currentUrl)}`}
-              >
-                <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center p-4">
-                  <Image
-                    src={card.image_url_front}
-                    alt={card.name}
-                    width={180}
-                    height={110}
-                    className="w-24 h-24 object-cover rounded mb-2"
-                  />
-                  <div className="font-bold text-blue-900">{card.name}</div>
-                  <div className="text-xs text-gray-400">{card.company}</div>
-                  <div className="text-xs text-gray-400">{card.citys}{card.area && "・" + card.area}</div>
-                </div>
-              </Link>
+              !!card.url_slug && (
+                <Link
+                  key={card.id}
+                  href={`/card/${card.url_slug}?from=${encodeURIComponent(currentUrl)}`}
+                >
+                  <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center p-4">
+                    <Image
+                      src={card.image_url_front}
+                      alt={card.name}
+                      width={180}
+                      height={110}
+                      className="w-24 h-24 object-cover rounded mb-2"
+                    />
+                    <div className="font-bold text-blue-900">{card.name}</div>
+                    <div className="text-xs text-gray-400">{card.company}</div>
+                    <div className="text-xs text-gray-400">{card.citys}{card.area && "・" + card.area}</div>
+                  </div>
+                </Link>
+              )
             ))}
           </div>
         }
