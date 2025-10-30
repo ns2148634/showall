@@ -26,6 +26,7 @@ type Card = {
 };
 
 export default function CardPage({ url_slug }: { url_slug: string }) {
+  console.log("CardPage 收到的 url_slug:", url_slug);
   const [card, setCard] = useState<Card | null>(null);
   const [msg, setMsg] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
@@ -40,7 +41,6 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       : "";
 
   useEffect(() => {
-    console.log("CardPage 收到的 url_slug: ", url_slug); // debug
     if (!url_slug) {
       setMsg("查無此名片或參數錯誤");
       return;
@@ -138,6 +138,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         <div className="text-center text-gray-400">載入中...</div>
       </div>
     );
+
   return (
     <div className="min-h-screen flex flex-col items-center bg-gradient-to-b from-blue-100 to-white py-8 px-4">
       <div
