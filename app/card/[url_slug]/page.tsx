@@ -205,6 +205,12 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         )}
       </div>
 
+      <button
+        onClick={handleShare}
+        className="w-full py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition"
+      >
+        我也要上傳抽IPhone 17！
+      </button>
       {/* 推薦邀請區塊 */}
       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-5 mt-6 w-full max-w-md">
         <h3 className="font-bold text-blue-900 text-lg mb-2">💰 邀請朋友上傳名片</h3>
@@ -225,19 +231,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
             複製連結
           </button>
         </div>
-        <button
-          onClick={handleShareCardUrl}
-          className="w-full py-3 rounded-lg bg-blue-700 text-white font-bold text-lg mt-5 hover:bg-blue-900 transition"
-        >
-          分享我的名片
-        </button>
 
-        <button
-          onClick={handleShare}
-          className="w-full py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition"
-        >
-          我也要上傳
-        </button>
 
         {/* 推薦邀請連結的 QRCode 圖片 */}
         <div className="mt-6 flex flex-col items-center gap-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
@@ -255,7 +249,19 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
           </div>
         </div>
       </div>
-
+      {/* 返回上一頁搜尋結果 */}
+      {from ? (
+        <button
+          className="mt-8 text-whilte hover:underline font-medium"
+          onClick={() => router.replace(from)}
+        >
+          ⬅️ 返回搜尋結果
+        </button>
+      ) : (
+        <Link href="/" className="mt-8 text-blue-600 hover:underline font-medium">
+          ⬅️ 回首頁
+        </Link>
+      )}
       {/* 新增專屬推薦統計 email 通知按鈕 */}
       <button
         onClick={handleSendStatsEmail}
@@ -270,19 +276,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         </div>
       )}
 
-      {/* 返回上一頁搜尋結果 */}
-      {from ? (
-        <button
-          className="mt-8 text-blue-600 hover:underline font-medium"
-          onClick={() => router.replace(from)}
-        >
-          ⬅️ 返回搜尋結果
-        </button>
-      ) : (
-        <Link href="/" className="mt-8 text-blue-600 hover:underline font-medium">
-          ⬅️ 回首頁
-        </Link>
-      )}
+
     </div>
   );
 }

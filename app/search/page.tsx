@@ -5,6 +5,8 @@ import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import AreaSelector from "@/components/AreaSelector";
 import RandomCards from "@/components/RandomCards";
+import { useSearchParams } from "next/navigation";
+
 
 const PAGE_SIZE = 10;
 
@@ -29,6 +31,8 @@ export default function SearchPage() {
   const [total, setTotal] = useState(0);
   const [cards, setCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const searchParams = useSearchParams();
+
 
   useEffect(() => {
     async function fetchCities() {
@@ -38,7 +42,21 @@ export default function SearchPage() {
     }
     fetchCities();
   }, []);
+  useEffect(() => {
+    if (searchParams) {
+      const kw = searchParams.get("keyword");
+      const city = searchParams.get("city");
+      const area = searchParams.get("area");
+      const orderBy = searchParams.get("order");
+      const pageNo = searchParams.get("page");
 
+      if (kw !== null) setKeyword(kw);
+      if (city !== null) setSelectedCity(city);
+      if (area !== null) setSelectedArea(area);
+      if (orderBy !== null) setOrder(orderBy);
+      if (pageNo !== null) setPage(Number(pageNo));
+    }
+  }, [searchParams]);
   useEffect(() => {
     async function fetchAreas() {
       if (selectedCity === "全部") {
