@@ -40,12 +40,14 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
     : "";
 
   useEffect(() => {
+    console.log('CardPage params:', params); // 應該出現 { url_slug: "xxx" }
+
     async function fetchCard() {
       const { data, error } = await supabase
         .from("cards")
         .select("*")
         .eq("url_slug", params.url_slug)
-        
+        .eq("published", true)
         .single();
       if (error || !data) {
         setMsg("查無此名片或尚未發佈");
@@ -53,7 +55,8 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
       }
       setCard(data);
     }
-    fetchCard();
+    fetchCard(); console.log('fetchCard params.url_slug:', params.url_slug);
+
   }, [params.url_slug]);
 
   const referralUrl =
