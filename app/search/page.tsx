@@ -2,11 +2,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import AreaSelector from "@/components/AreaSelector";
 import RandomCards from "@/components/RandomCards";
-import { useSearchParams } from "next/navigation";
-
 
 const PAGE_SIZE = 10;
 
@@ -21,6 +20,7 @@ export default function SearchPage() {
     }
   }, []);
 
+  // 狀態
   const [keyword, setKeyword] = useState("");
   const [cities, setCities] = useState<string[]>([]);
   const [areas, setAreas] = useState<string[]>([]);
@@ -31,17 +31,17 @@ export default function SearchPage() {
   const [total, setTotal] = useState(0);
   const [cards, setCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+
   const searchParams = useSearchParams();
+  const router = useRouter();
 
+  // 取得當前頁面 URL，供個人名片頁from參數使用
+  let currentUrl = "/";
+  if (typeof window !== "undefined") {
+    currentUrl = window.location.pathname + window.location.search;
+  }
 
-  useEffect(() => {
-    async function fetchCities() {
-      const { data: cityObjs } = await supabase.from('cities').select('citys');
-      const uniqueCities = Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean))).sort();
-      setCities(["全部", ...uniqueCities]);
-    }
-    fetchCities();
-  }, []);
+  // ★ 根據 URL query 自動回填條件
   useEffect(() => {
     if (searchParams) {
       const kw = searchParams.get("keyword");
@@ -54,9 +54,23 @@ export default function SearchPage() {
       if (city !== null) setSelectedCity(city);
       if (area !== null) setSelectedArea(area);
       if (orderBy !== null) setOrder(orderBy);
-      if (pageNo !== null) setPage(Number(pageNo));
+      if (pageNo !== null && !isNaN(Number(pageNo))) setPage(Number(pageNo));
     }
-  }, [searchParams]);
+  // 只在第一次進頁面或searchParams變動時執行
+  // eslint-disable-next-line
+  }, []);
+
+  // 城市選項資料
+  useEffect(() => {
+    async function fetchCities() {
+      const { data: cityObjs } = await supabase.from('cities').select('citys');
+      const uniqueCities = Array.from(new Set(cityObjs?.map(c => c.citys).filter(Boolean))).sort();
+      setCities(["全部", ...uniqueCities]);
+    }
+    fetchCities();
+  }, []);
+
+  // 地區選項資料
   useEffect(() => {
     async function fetchAreas() {
       if (selectedCity === "全部") {
@@ -72,6 +86,7 @@ export default function SearchPage() {
     fetchAreas();
   }, [selectedCity]);
 
+  // 有條件時自動查詢
   const hasCondition =
     keyword.trim() ||
     (selectedCity && selectedCity !== "全部") ||
@@ -83,8 +98,9 @@ export default function SearchPage() {
     if (!hasCondition) return;
     fetchCards();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, order, selectedCity, selectedArea, keyword]); // 允許 fetchCards
+  }, [page, order, selectedCity, selectedArea, keyword]);
 
+  // 查詢名片
   async function fetchCards() {
     setLoading(true);
     let query = supabase.from('cards').select('*', { count: "exact" }).eq('published', true);
@@ -113,21 +129,19 @@ export default function SearchPage() {
     setLoading(false);
   }
 
+  // 搜尋按下，條件同步到 URL
   function doSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setPage(1);
+    // 將條件同步到 query string
+    const url = `/search?keyword=${encodeURIComponent(keyword)}&city=${encodeURIComponent(selectedCity)}&area=${encodeURIComponent(selectedArea)}&order=${order}&page=1`;
+    router.replace(url);
     fetchCards();
   }
 
   const handleCloseModal = (e: React.MouseEvent<HTMLButtonElement>) => {
     setShowTipsModal(false);
-  }
-
-  // 取得當前頁面 URL 給個人名片頁做 from 參數
-  let currentUrl = "/";
-  if (typeof window !== "undefined") {
-    currentUrl = window.location.pathname + window.location.search;
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -204,7 +218,13 @@ export default function SearchPage() {
               <button
                 key={i}
                 className={`px-3 py-1 rounded ${page === i + 1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
-                onClick={() => setPage(i + 1)}
+                onClick={() => {
+                  setPage(i + 1);
+                  // 分頁跳轉也同步到 URL
+                  router.replace(
+                    `/search?keyword=${encodeURIComponent(keyword)}&city=${encodeURIComponent(selectedCity)}&area=${encodeURIComponent(selectedArea)}&order=${order}&page=${i + 1}`
+                  );
+                }}
               >{i + 1}</button>
             ))}
           </div>
