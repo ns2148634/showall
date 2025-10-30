@@ -45,7 +45,7 @@ export default function CardPage({ params }: { params: { url_slug: string } }) {
         .from("cards")
         .select("*")
         .eq("url_slug", params.url_slug)
-        .eq("published", true)
+        
         .single();
       if (error || !data) {
         setMsg("查無此名片或尚未發佈");
