@@ -30,7 +30,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
   const [msg, setMsg] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
 
-  // 取出 from 參數
+  // 取得上一頁搜尋參數
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
   const router = useRouter();
@@ -40,6 +40,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
     : "";
 
   useEffect(() => {
+    console.log("CardPage 收到的 url_slug: ", url_slug); // debug
     if (!url_slug) {
       setMsg("查無此名片或參數錯誤");
       return;
@@ -51,6 +52,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         .eq("url_slug", url_slug)
         .eq("published", true)
         .single();
+      console.log("fetch result:", data, error); // debug
       if (error || !data) {
         setMsg("查無此名片或尚未發佈");
         return;
