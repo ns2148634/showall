@@ -87,12 +87,7 @@ export default function SearchPage() {
     order !== "random" ||
     page > 1;
 
-  useEffect(() => {
-    if (!hasCondition) return;
-    fetchCards();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, order, selectedCity, selectedArea, keyword]);
-
+  // 只用按鈕搜尋，不自動查詢
   async function fetchCards() {
     setLoading(true);
     let query = supabase.from('cards').select('*', { count: "exact" }).eq('published', true);
@@ -152,34 +147,52 @@ export default function SearchPage() {
           </div>
         </div>
       )}
+
       <main className="max-w-3xl mx-auto py-10">
-        <form className="flex flex-wrap gap-4 justify-center mb-6" onSubmit={doSearch}>
-          <input
-            type="text"
-            value={keyword}
-            maxLength={30}
-            placeholder="關鍵字（姓名、簡介…）"
-            className="border rounded p-2 w-44"
-            onChange={e => setKeyword(e.target.value)}
-          />
-          <AreaSelector
-            cities={cities}
-            selectedCity={selectedCity}
-            setSelectedCity={setSelectedCity}
-            areas={areas}
-            selectedArea={selectedArea}
-            setSelectedArea={setSelectedArea}
-          />
-          <select className="p-2 rounded border" value={order} onChange={e => setOrder(e.target.value)}>
-            <option value="random">隨機排序</option>
-            <option value="created">刊登最近</option>
-            <option value="views">瀏覽最多</option>
-          </select>
-          <button type="submit" className="bg-blue-600 text-white rounded px-4">搜尋</button>
-        </form>
+        {/* 美化搜尋表單卡片 */}
+        <div className="bg-white rounded-xl shadow-md p-6 flex flex-wrap gap-4 items-center justify-center mb-8">
+          <form className="flex flex-wrap gap-4 items-center justify-center w-full" onSubmit={doSearch}>
+            <input
+              type="text"
+              value={keyword}
+              maxLength={30}
+              placeholder="關鍵字（姓名、簡介…）"
+              className="border rounded-lg p-3 w-56 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-300 transition text-gray-700"
+              onChange={e => setKeyword(e.target.value)}
+            />
+            <AreaSelector
+              cities={cities}
+              selectedCity={selectedCity}
+              setSelectedCity={setSelectedCity}
+              areas={areas}
+              selectedArea={selectedArea}
+              setSelectedArea={setSelectedArea}
+            />
+            <select className="p-3 rounded-lg border bg-gray-50 w-40 text-gray-700" value={order} onChange={e => setOrder(e.target.value)}>
+              <option value="random">隨機排序</option>
+              <option value="created">刊登最近</option>
+              <option value="views">瀏覽最多</option>
+            </select>
+            <button type="submit" className="bg-blue-600 text-white font-bold rounded-lg px-6 py-2 shadow hover:bg-blue-700 transition text-lg">
+              搜尋
+            </button>
+          </form>
+        </div>
+
         <div className="text-gray-700 mb-2">{loading ? "載入中..." : `共 ${total} 筆結果`}</div>
+
         {!hasCondition && <RandomCards limit={10} />}
-        {hasCondition &&
+
+        {/* 美化空狀態 */}
+        {hasCondition && cards.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-40 text-gray-400 mt-12">
+            <svg className="w-14 h-14 mb-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
+            <div className="text-xl font-bold">暫無名片</div>
+            <div className="text-sm">請嘗試其他條件或重新搜尋</div>
+          </div>
+        )}
+
+        {hasCondition && cards.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
             {cards.map(card => (
               !!card.url_slug && (
@@ -187,7 +200,7 @@ export default function SearchPage() {
                   key={card.id}
                   href={`/card/${card.url_slug}?from=${encodeURIComponent(currentUrl)}`}
                 >
-                  <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center p-4">
+                  <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center p-4 bg-white border">
                     <Image
                       src={card.image_url_front}
                       alt={card.name}
@@ -203,13 +216,14 @@ export default function SearchPage() {
               )
             ))}
           </div>
-        }
-        {hasCondition &&
+        )}
+
+        {hasCondition && cards.length > 0 && (
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
             {Array.from({ length: Math.ceil(total / PAGE_SIZE) }, (_, i) => (
               <button
                 key={i}
-                className={`px-3 py-1 rounded ${page === i + 1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
+                className={`px-3 py-1 rounded-lg shadow text-lg ${page === i + 1 ? "bg-blue-700 text-white" : "bg-white text-blue-700 border"}`}
                 onClick={() => {
                   setPage(i + 1);
                   router.replace(
@@ -219,8 +233,9 @@ export default function SearchPage() {
               >{i + 1}</button>
             ))}
           </div>
-        }
+        )}
       </main>
+
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-12">
         &copy; 2025 SHOWALL 名片+
       </footer>
