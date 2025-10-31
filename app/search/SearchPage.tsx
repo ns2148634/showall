@@ -195,44 +195,26 @@ export default function SearchPage() {
         {hasCondition &&
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
             {cards.map(card => (
-              !!card.url_slug && (
+              !!card.url_slug && !!card.image_url_front && (
                 <Link
                   key={card.id}
                   href={`/card/${card.url_slug}?from=${encodeURIComponent(currentUrl)}`}
                 >
-                  <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-5 border border-gray-100 flex flex-col items-center group cursor-pointer relative">
-                    <div className="relative mb-2">
-                      <Image
-                        src={card.image_url_front}
-                        alt={card.name}
-                        width={140}
-                        height={100}
-                        className="w-28 h-28 object-cover rounded-xl border-2 border-blue-50 group-hover:border-blue-300 bg-white shadow-sm"
-                      />
-                      {/* 角標/標籤範例 (若要顯示) */}
-                      {card.tag1 &&
-                        <span className="absolute top-1 left-1 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow font-bold">
-                          {card.tag1}
-                        </span>
-                      }
-                    </div>
-                    <div className="font-bold text-lg text-blue-900 mb-1">{card.name}</div>
-                    <div className="text-xs text-gray-500 mb-1">{card.company}</div>
-                    <div className="text-xs text-gray-400">{card.citys}{card.area && "・" + card.area}</div>
-                    {/* Views 可加可不加： */}
-                    {typeof card.views === "number" &&
-                      <div className="mt-2 text-xs text-orange-400 font-bold">
-                        👁️ {card.views} 次瀏覽
-                      </div>
-                    }
-                    {/* 漸層 hover 動畫 */}
-                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-blue-300 rounded-2xl pointer-events-none transition"></div>
+                  <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-5 flex items-center justify-center cursor-pointer">
+                    <Image
+                      src={card.image_url_front}
+                      alt={card.name}
+                      width={220}
+                      height={140}
+                      className="w-full h-auto max-w-xs object-contain rounded-xl border-2 border-gray-200 bg-white shadow"
+                    />
                   </div>
                 </Link>
               )
             ))}
           </div>
         }
+
 
         {hasCondition &&
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
