@@ -104,26 +104,27 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       .eq("referrer_slug", card.url_slug)
       .eq("status", "completed");
     const drawCount = count || 0;
-    await fetch("/api/sendMail", {
+    const res = await fetch("/api/sendMail", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         to: card.email,
         subject: "SHOWALL抽獎機會統計",
         html: `
-  <div style="font-family: Arial;line-height:1.7;">
-    <h2 style="color:#2563eb;">您的推薦抽獎機會統計</h2>
-    <p>您目前已累積 <b style="color:#1868ca;font-size:20px;">${drawCount}</b> 次抽獎機會。每多推薦1人成功註冊，即多1次抽獎資格！</p>
-    <ul style="margin:20px 0 14px 15px;color:#174179;">
-      <li>請持續邀請朋友註冊、刊登名片，衝高抽獎次數！</li>
-    </ul>
-    <div style="margin-top:20px;color:#666;font-size:13px;">
-      本信件由系統產生，如非本人請忽略。
-    </div>
-  </div>
-  `,
+      <div style="font-family: Arial;line-height:1.7;">
+        <h2 style="color:#2563eb;">您的推薦抽獎機會統計</h2>
+        <p>您目前已累積 <b style="color:#1868ca;font-size:20px;">${drawCount}</b> 次抽獎機會。每多推薦1人成功註冊，即多1次抽獎資格！</p>
+        <ul style="margin:20px 0 14px 15px;color:#174179;">
+          <li>請持續邀請朋友註冊、刊登名片，衝高抽獎次數！</li>
+        </ul>
+        <div style="margin-top:20px;color:#666;font-size:13px;">
+          本信件由系統產生，如非本人請忽略。
+        </div>
+      </div>
+    `,
       }),
     });
+
     setEmailLoading(false);
     setMsg("已寄送專屬統計/申請連結至您的 Email，請查收！");
     setTimeout(() => setMsg(""), 4000);
@@ -294,13 +295,6 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         className="mt-8 text-white hover:underline font-medium"
       >
         ⬅️ 返回上一頁
-      </button>
-      {/* 回首頁按鈕 */}
-      <button
-        onClick={() => router.push('/')}
-        className="mt-4 text-gray-600 hover:underline text-sm"
-      >
-        回首頁
       </button>
 
       {/* Email 統計按鈕 */}
