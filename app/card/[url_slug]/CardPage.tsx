@@ -282,14 +282,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
           </div>
         </div>
       </div>
-      {/* Email 統計按鈕 */}
-      <button
-        onClick={handleSendStatsEmail}
-        className="block w-full text-center py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-900 font-bold mt-3"
-        disabled={emailLoading}
-      >
-        {emailLoading ? "寄送中..." : "寄送推薦統計"}
-      </button>
+
       {msg && (
         <div className="mt-2 text-center font-bold text-purple-700 bg-purple-50 px-2 py-2 rounded">
           {msg}
@@ -298,14 +291,26 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       {/* 返回上一頁 */}
       <button
         onClick={() => router.back()}
-        className="mt-8 text-blue-600 hover:underline font-medium"
+        className="mt-8 text-white hover:underline font-medium"
       >
         ⬅️ 返回上一頁
       </button>
-      {/* 回首頁連結 */}
-      <Link href="/" className="mt-4 text-gray-600 hover:underline text-sm">
+      {/* 回首頁按鈕 */}
+      <button
+        onClick={() => router.push('/')}
+        className="mt-4 text-gray-600 hover:underline text-sm"
+      >
         回首頁
-      </Link>
+      </button>
+
+      {/* Email 統計按鈕 */}
+      <button
+        onClick={handleSendStatsEmail}
+        className="block w-full text-center py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-900 font-bold mt-3"
+        disabled={emailLoading}
+      >
+        {emailLoading ? "寄送中..." : "寄送推薦統計"}
+      </button>
     </div>
   );
 }
