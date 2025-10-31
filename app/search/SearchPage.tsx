@@ -200,21 +200,18 @@ export default function SearchPage() {
                   key={card.id}
                   href={`/card/${card.url_slug}?from=${encodeURIComponent(currentUrl)}`}
                 >
-                  <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-5 flex items-center justify-center cursor-pointer">
-                    <Image
-                      src={card.image_url_front}
-                      alt={card.name}
-                      width={220}
-                      height={140}
-                      className="w-full h-auto max-w-xs object-contain rounded-xl border-2 border-gray-200 bg-white shadow"
-                    />
-                  </div>
+                  <Image
+                    src={card.image_url_front}
+                    alt={card.name}
+                    width={220}
+                    height={140}
+                    className="w-full h-auto max-w-xs object-contain rounded-lg shadow-xl hover:shadow-2xl bg-white transition cursor-pointer"
+                  />
                 </Link>
               )
             ))}
           </div>
         }
-
 
         {hasCondition &&
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
