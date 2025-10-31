@@ -26,7 +26,10 @@ type Card = {
 };
 
 export default function CardPage({ url_slug }: { url_slug: string }) {
-  console.log("CardPage 收到的 url_slug:", url_slug);
+  // 強制 decode slug，讓 supabase 查询条件与数据库字段原始一致
+  const decodedSlug = decodeURIComponent(url_slug);
+
+  console.log("CardPage 收到的 url_slug:", url_slug, decodedSlug);
   const [card, setCard] = useState<Card | null>(null);
   const [msg, setMsg] = useState("");
   const [emailLoading, setEmailLoading] = useState(false);
@@ -41,16 +44,15 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       : "";
 
   useEffect(() => {
-    if (!url_slug) {
+    if (!decodedSlug) {
       setMsg("查無此名片或參數錯誤");
       return;
     }
     async function fetchCard() {
-      // 不要 encode/decode url_slug！直接查原始字串
       const { data, error } = await supabase
         .from("cards")
         .select("*")
-        .eq("url_slug", url_slug)
+        .eq("url_slug", decodedSlug)
         .eq("published", true)
         .single();
       if (error || !data) {
@@ -60,7 +62,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       setCard(data);
     }
     fetchCard();
-  }, [url_slug]);
+  }, [decodedSlug]);
 
   const referralUrl =
     typeof window !== "undefined"
