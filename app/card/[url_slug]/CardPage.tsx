@@ -46,6 +46,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       return;
     }
     async function fetchCard() {
+      // 不要 encode/decode url_slug！直接查原始字串
       const { data, error } = await supabase
         .from("cards")
         .select("*")
