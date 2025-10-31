@@ -1,13 +1,12 @@
 import CardPage from "./CardPage";
 
-// Next.js 15+ 支援 async/await 頁面 function，動態路由 params 有機會是 Promise
-export default async function Page({ params }: { params: { url_slug: string } }) {
-  // 如遇某些部署或 edge 環境 params 是 Promise，這樣寫更保險
-  // const { url_slug } = await params; ← 如 params 真的是 Promise 才需要這行
+// Next.js 15+ 某些部署 params 真的是 Promise，所以這樣寫更穩
+export default async function Page({ params }: { params: any }) {
+  // 保險起見都 await
+  const realParams = await params;
+  const url_slug = realParams?.url_slug ?? "";
 
-  const { url_slug } = params;
-
-  console.log("page.tsx url_slug:", url_slug);
+  console.log("page.tsx url_slug（await解 Promise結果）:", url_slug);
 
   if (!url_slug) {
     return (
