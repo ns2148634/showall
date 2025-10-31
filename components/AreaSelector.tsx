@@ -45,7 +45,7 @@ export default function AreaSelector({
   return (
     <div className="flex gap-2">
       <div>
-        <label className="block text-xs text-gray-600 mb-1">城市/行政區</label>
+        <label className="block text-xs text-gray-600 mb-1">城市</label>
         <select 
           className="p-2 rounded border" 
           value={selectedCity} 
@@ -55,7 +55,7 @@ export default function AreaSelector({
         </select>
       </div>
       <div>
-        <label className="block text-xs text-gray-600 mb-1">地區</label>
+        <label className="block text-xs text-gray-600 mb-1">行政區</label>
         <select 
           className="p-2 rounded border" 
           value={selectedArea} 
