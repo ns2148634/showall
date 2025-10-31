@@ -168,7 +168,6 @@ export default function SearchPage() {
               />
             </div>
             <div className="flex flex-col">
-              <span className="text-xs text-gray-500 mb-1 ml-1">城市</span>
               <AreaSelector
                 cities={cities}
                 selectedCity={selectedCity}
@@ -193,32 +192,48 @@ export default function SearchPage() {
           </form>
         </div>
         <div className="text-gray-700 mb-2">{loading ? "載入中..." : `共 ${total} 筆結果`}</div>
-        {!hasCondition && <RandomCards limit={10} />}
         {hasCondition &&
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
             {cards.map(card => (
               !!card.url_slug && (
                 <Link
                   key={card.id}
                   href={`/card/${card.url_slug}?from=${encodeURIComponent(currentUrl)}`}
                 >
-                  <div className="rounded shadow hover:shadow-lg transition flex flex-col items-center p-4">
-                    <Image
-                      src={card.image_url_front}
-                      alt={card.name}
-                      width={180}
-                      height={110}
-                      className="w-24 h-24 object-cover rounded mb-2"
-                    />
-                    <div className="font-bold text-blue-900">{card.name}</div>
-                    <div className="text-xs text-gray-400">{card.company}</div>
+                  <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl transition p-5 border border-gray-100 flex flex-col items-center group cursor-pointer relative">
+                    <div className="relative mb-2">
+                      <Image
+                        src={card.image_url_front}
+                        alt={card.name}
+                        width={140}
+                        height={100}
+                        className="w-28 h-28 object-cover rounded-xl border-2 border-blue-50 group-hover:border-blue-300 bg-white shadow-sm"
+                      />
+                      {/* 角標/標籤範例 (若要顯示) */}
+                      {card.tag1 &&
+                        <span className="absolute top-1 left-1 bg-blue-600 text-white text-xs px-2 py-1 rounded-full shadow font-bold">
+                          {card.tag1}
+                        </span>
+                      }
+                    </div>
+                    <div className="font-bold text-lg text-blue-900 mb-1">{card.name}</div>
+                    <div className="text-xs text-gray-500 mb-1">{card.company}</div>
                     <div className="text-xs text-gray-400">{card.citys}{card.area && "・" + card.area}</div>
+                    {/* Views 可加可不加： */}
+                    {typeof card.views === "number" &&
+                      <div className="mt-2 text-xs text-orange-400 font-bold">
+                        👁️ {card.views} 次瀏覽
+                      </div>
+                    }
+                    {/* 漸層 hover 動畫 */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-10 bg-blue-300 rounded-2xl pointer-events-none transition"></div>
                   </div>
                 </Link>
               )
             ))}
           </div>
         }
+
         {hasCondition &&
           <div className="flex flex-wrap gap-2 justify-center items-center my-6">
             {Array.from({ length: Math.ceil(total / PAGE_SIZE) }, (_, i) => (
