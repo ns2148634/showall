@@ -294,7 +294,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         onClick={() => router.back()}
         className="mt-8 text-white hover:underline font-medium"
       >
-        ⬅️ 返回上一頁
+        返回上一頁
       </button>
 
       {/* Email 統計按鈕 */}

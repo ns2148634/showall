@@ -32,7 +32,7 @@ export default function SideFabContact() {
         title="名片定制與客服聯絡"
         type="button"
       >
-        名片+客服
+        名片定制與客服聯絡
       </button>
 
       {/* 彈出modal */}
