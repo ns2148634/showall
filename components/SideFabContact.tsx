@@ -59,7 +59,7 @@ export default function SideFabContact() {
                   rel="noopener noreferrer"
                   className="block w-full bg-green-500 hover:bg-green-600 text-white py-3 px-5 rounded-lg font-bold text-base text-center transition"
                 >
-                  🔹 名片定制諮詢
+                  名片定制諮詢
                 </a>
               </li>
 
@@ -70,7 +70,7 @@ export default function SideFabContact() {
                   className="block w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-lg font-bold text-base text-center transition"
                   onClick={() => setIsOpen(false)}
                 >
-                  🔹 我有問題或提案
+                  我有問題或提案
                 </Link>
               </li>
 

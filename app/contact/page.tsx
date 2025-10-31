@@ -29,10 +29,10 @@ export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center pt-16">
       <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-xl">
-        <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">聯絡客服</h1>
+        <h1 className="text-2xl font-bold mb-6 text-blue-700 text-center">請填寫表單</h1>
         {submitted ? (
           <div className="text-green-600 text-center py-12 font-bold">
-            已送出！客服會儘快回覆<br />
+            已送出！我們會儘快回覆<br />
             <span className="text-gray-500 text-sm">（本訊息已記錄在後台）</span><br />
             您也可直接 Email: <a href="mailto:service@showall.tw" className="underline text-blue-700">service@showall.tw</a>
           </div>
