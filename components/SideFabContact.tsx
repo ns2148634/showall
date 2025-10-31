@@ -28,8 +28,8 @@ export default function SideFabContact() {
           minWidth: 40,
           boxShadow: "0 2px 8px rgba(39,102,173,0.14), 0 8px 24px 2px rgba(0,0,0,.16)"
         }}
-        aria-label="名片+客服"
-        title="名片+客服"
+        aria-label="名片定制與客服聯絡"
+        title="名片定制與客服聯絡"
         type="button"
       >
         名片+客服
@@ -50,9 +50,7 @@ export default function SideFabContact() {
             }
             onClick={e => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold text-blue-700 mb-1 text-center">
-              想製作或數位化名片嗎？
-            </h2>
+
             <ul className="space-y-3 my-6">
               <li>
                 <a
@@ -61,23 +59,21 @@ export default function SideFabContact() {
                   rel="noopener noreferrer"
                   className="block w-full bg-green-500 hover:bg-green-600 text-white py-3 px-5 rounded-lg font-bold text-base text-center transition"
                 >
-                  🔹 立即用 LINE 聯絡
+                  🔹 名片定制諮詢
                 </a>
               </li>
-              <h2 className="text-xl font-bold text-blue-700 mb-1 text-center">
-              合作方案與帳務問題？
-            </h2>
-            <ul className="space-y-3 my-6"></ul>
+
+              <ul className="space-y-3 my-6"></ul>
               <li>
                 <Link
                   href="/contact"
                   className="block w-full bg-blue-500 hover:bg-blue-600 text-white py-3 px-5 rounded-lg font-bold text-base text-center transition"
                   onClick={() => setIsOpen(false)}
                 >
-                  🔹 立即填寫咨詢表單
+                  🔹 我有問題或提案
                 </Link>
               </li>
-             
+
             </ul>
             <button
               onClick={() => setIsOpen(false)}
