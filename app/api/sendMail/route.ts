@@ -13,12 +13,16 @@ export async function POST(req: Request) {
     },
   });
 
-  await transporter.sendMail({
-    from: '"SHOWALL名片+" <service@showall.tw>',
-    to,
-    subject,
-    html,
-  });
-
-  return Response.json({ ok: true });
+  try {
+    await transporter.sendMail({
+      from: '"SHOWALL名片+" <service@showall.tw>',
+      to,
+      subject,
+      html,
+    });
+    return Response.json({ success: true });
+  } catch (err) {
+    return Response.json({ success: false, error: (err as Error).message });
+  }
 }
+
