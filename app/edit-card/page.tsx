@@ -1,5 +1,10 @@
 import EditCardPage from "./EditCardPage";
+import { Suspense } from "react";
 
 export default function Page() {
-  return <EditCardPage />;
+  return (
+    <Suspense>
+      <EditCardPage />
+    </Suspense>
+  );
 }
