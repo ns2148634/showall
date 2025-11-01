@@ -23,16 +23,22 @@ type Card = {
   tag2?: string;
   tag3?: string;
   tag4?: string;
+  views?: number;
+};
+
+type Question = {
+  field: string;
+  label: string;
+  answer: string;
 };
 
 export default function CardPage({ url_slug }: { url_slug: string }) {
-  // 強制 decode slug，讓 supabase 查询条件与数据库字段原始一致
   const decodedSlug = decodeURIComponent(url_slug);
-
-  console.log("CardPage 收到的 url_slug:", url_slug, decodedSlug);
   const [card, setCard] = useState<Card | null>(null);
   const [msg, setMsg] = useState("");
-  const [emailLoading, setEmailLoading] = useState(false);
+  const [question, setQuestion] = useState<Question | null>(null);
+  const [userAnswer, setUserAnswer] = useState("");
+  const [loadingEditMail, setLoadingEditMail] = useState(false);
 
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
@@ -43,6 +49,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       ? `${window.location.origin}/card/${card?.url_slug ?? ""}`
       : "";
 
+  // 讀資料同時計次
   useEffect(() => {
     if (!decodedSlug) {
       setMsg("查無此名片或參數錯誤");
@@ -60,23 +67,27 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         return;
       }
       setCard(data);
+      // 新增：計次
+      await supabase
+        .from("cards")
+        .update({ views: (data.views || 0) + 1 })
+        .eq("id", data.id);
     }
     fetchCard();
   }, [decodedSlug]);
 
+  // 分享連結
   const referralUrl =
     typeof window !== "undefined"
       ? `${window.location.origin}/upload?referrer=${card?.url_slug ?? ""}`
       : "";
 
-  function handleShare() {
-    window.open(referralUrl, "_blank");
-  }
   function copyUrl() {
     navigator.clipboard.writeText(referralUrl);
     setMsg("✅ 已複製推薦連結！邀請朋友上傳成功，抽獎機會+1");
     setTimeout(() => setMsg(""), 3000);
   }
+
   function handleShareCardUrl() {
     if (navigator.share) {
       navigator.share({
@@ -91,43 +102,48 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       setTimeout(() => setMsg(""), 3000);
     }
   }
-  async function handleSendStatsEmail() {
-    if (!card?.email || !card?.url_slug) {
-      setMsg("未取得 email，請稍後重試！");
+
+  // 資料驗證並隨機出題
+  function handleRequestEdit() {
+    if (!card) return;
+    const qa: Question[] = [
+      { field: "name", label: "請輸入姓名", answer: card.name ?? "" },
+      { field: "mobile", label: "請輸入手機號碼", answer: card.mobile ?? "" },
+      { field: "company", label: "請輸入公/組織名稱", answer: card.company ?? "" },
+      { field: "line", label: "請輸入LINE ID", answer: card.line ?? "" },
+      { field: "email", label: "請輸入Email", answer: card.email ?? "" },
+      { field: "citys", label: "請輸入所在城市", answer: card.citys ?? "" }
+    ].filter(q => q.answer);
+    if (qa.length === 0) {
+      setMsg("沒有足夠的驗證資料欄位");
       return;
     }
-    setEmailLoading(true);
+    // 隨機抽一題
+    const randIdx = Math.floor(Math.random() * qa.length);
+    const pick = qa[randIdx];
+    setQuestion(pick);
+    setUserAnswer("");
+    setMsg("");
+  }
 
-    const { count } = await supabase
-      .from("referrals")
-      .select("*", { count: "exact", head: true })
-      .eq("referrer_slug", card.url_slug)
-      .eq("status", "completed");
-    const drawCount = count || 0;
-    const res = await fetch("/api/sendMail", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: card.email,
-        subject: "SHOWALL抽獎機會統計",
-        html: `
-      <div style="font-family: Arial;line-height:1.7;">
-        <h2 style="color:#2563eb;">您的推薦抽獎機會統計</h2>
-        <p>您目前已累積 <b style="color:#1868ca;font-size:20px;">${drawCount}</b> 次抽獎機會。每多推薦1人成功註冊，即多1次抽獎資格！</p>
-        <ul style="margin:20px 0 14px 15px;color:#174179;">
-          <li>請持續邀請朋友註冊、刊登名片，衝高抽獎次數！</li>
-        </ul>
-        <div style="margin-top:20px;color:#666;font-size:13px;">
-          本信件由系統產生，如非本人請忽略。
-        </div>
-      </div>
-    `,
-      }),
-    });
-
-    setEmailLoading(false);
-    setMsg("已寄送專屬統計/申請連結至您的 Email，請查收！");
-    setTimeout(() => setMsg(""), 4000);
+  async function handleCheckAnswer(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!card || !question) return;
+    if (userAnswer.trim() === question.answer) {
+      setLoadingEditMail(true);
+      setMsg("驗證成功！已寄送修改連結至信箱，請查收");
+      // 寄送一次性修改信，串接 /api/sendEditMail
+      await fetch("/api/sendEditMail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: card.email, slug: card.url_slug }),
+      });
+      setLoadingEditMail(false);
+      setQuestion(null);
+      setUserAnswer("");
+    } else {
+      setMsg("答案錯誤，請確認再試！");
+    }
   }
 
   if (msg && !card)
@@ -177,21 +193,18 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         {/* 基本資訊 */}
         <div className="space-y-3 mb-6">
           <div className="text-xl font-bold text-gray-800">{card.name}</div>
-          {card.company && (
-            <div className="text-gray-600">
-              <strong>公司/組織：</strong>
-              {card.company}
-            </div>
-          )}
-          <div className="text-gray-600">
-            <strong>Email：</strong>
-            {card.email}
-          </div>
+          <div className="text-gray-600"><strong>Email：</strong>{card.email}</div>
           {(card.citys || card.area) && (
             <div className="text-gray-600">
               <strong>所在地區：</strong>
               {card.citys}
               {card.area && card.area !== "全部" && `・${card.area}`}
+            </div>
+          )}
+          {card.company && (
+            <div className="text-gray-600">
+              <strong>公司/組織：</strong>
+              {card.company}
             </div>
           )}
           {card.line && (
@@ -213,23 +226,21 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
             </div>
           )}
         </div>
+
+        {/* 加入瀏覽次數顯示 */}
+        <div className="text-xs text-gray-400 mb-2">
+          👁️ 瀏覽次數：{card.views ?? 0}
+        </div>
+
         {/* 關鍵字標籤 */}
         {(card.tag1 || card.tag2 || card.tag3 || card.tag4) && (
           <div className="mb-6">
             <div className="font-bold text-gray-700 mb-2">經營項目</div>
             <div className="flex flex-wrap gap-2">
-              {card.tag1 && (
-                <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-sm">{card.tag1}</span>
-              )}
-              {card.tag2 && (
-                <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm">{card.tag2}</span>
-              )}
-              {card.tag3 && (
-                <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-sm">{card.tag3}</span>
-              )}
-              {card.tag4 && (
-                <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm">{card.tag4}</span>
-              )}
+              {card.tag1 && <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-sm">{card.tag1}</span>}
+              {card.tag2 && <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-sm">{card.tag2}</span>}
+              {card.tag3 && <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-700 text-sm">{card.tag3}</span>}
+              {card.tag4 && <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-sm">{card.tag4}</span>}
             </div>
           </div>
         )}
@@ -240,71 +251,40 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
             <p className="text-gray-600 whitespace-pre-wrap">{card.intro}</p>
           </div>
         )}
-      </div>
-      {/* 推薦邀請區塊 */}
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-5 mt-6 w-full max-w-md">
-        <h3 className="font-bold text-blue-900 text-lg mb-2">💰 邀請朋友上傳名片</h3>
-        <p className="text-gray-700 text-sm mb-4">
-          分享此連結邀請朋友上傳，成功推薦一人即可獲得 <strong className="text-red-600">抽獎機會+1</strong>！
-        </p>
-        <div className="flex gap-2 mb-3">
-          <input
-            type="text"
-            value={referralUrl}
-            readOnly
-            className="flex-1 border rounded px-3 py-2 text-sm bg-white text-gray-600"
-          />
-          <button
-            onClick={copyUrl}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition font-bold whitespace-nowrap"
-          >
-            複製連結
-          </button>
+
+        {/* 修改申請區塊 */}
+        <div className="mt-8 w-full">
+          {!question ? (
+            <button
+              className="block w-full bg-purple-700 hover:bg-purple-900 text-white font-bold rounded-lg py-3 text-lg transition"
+              onClick={handleRequestEdit}
+            >
+              申請資料修改
+            </button>
+          ) : (
+            <form onSubmit={handleCheckAnswer} className="bg-white shadow p-4 rounded-lg mt-4">
+              <div className="mb-2 text-gray-700 font-bold">{question.label}</div>
+              <input
+                value={userAnswer}
+                onChange={e => setUserAnswer(e.target.value)}
+                className="border p-2 rounded w-full mb-3"
+                autoFocus
+              />
+              <button type="submit" className="bg-blue-600 text-white font-bold rounded px-4 py-2" disabled={loadingEditMail}>
+                {loadingEditMail ? "寄送中..." : "送出驗證"}
+              </button>
+            </form>
+          )}
+          {msg && <div className="mt-2 font-bold text-green-700 bg-green-50 px-3 py-2 rounded">{msg}</div>}
         </div>
+        {/* 返回上一頁 */}
         <button
-          onClick={handleShare}
-          className="w-full py-3 rounded-lg bg-green-600 text-white font-bold text-lg hover:bg-green-700 transition"
+          onClick={() => router.back()}
+          className="mt-8 text-white hover:underline font-medium"
         >
-          我也要上傳
+          返回上一頁
         </button>
-        {/* QR Code */}
-        <div className="mt-6 flex flex-col items-center gap-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-          <div className="text-sm text-gray-700 font-bold mb-2">推薦連結 QR Code</div>
-          <img
-            src={`https://api.qrserver.com/v1/create-qr-code/?size=170x170&data=${encodeURIComponent(referralUrl)}`}
-            alt="推薦QR Code"
-            width={170}
-            height={170}
-            className="rounded bg-white shadow"
-            style={{ maxWidth: 170, maxHeight: 170 }}
-          />
-          <div className="text-xs text-gray-500 mt-1 text-center">
-            直接掃碼即連到「推薦上傳」頁，或手機長按儲存分享給朋友
-          </div>
-        </div>
       </div>
-
-      {msg && (
-        <div className="mt-2 text-center font-bold text-purple-700 bg-purple-50 px-2 py-2 rounded">
-          {msg}
-        </div>
-      )}
-      {/* 返回上一頁 */}
-      <button
-        onClick={() => router.back()}
-        className="mt-8 text-white hover:underline font-medium"
-      >
-        返回上一頁
-      </button>
-
-      {/* Email 統計按鈕 */}
-      <button
-        onClick={handleSendStatsEmail}
-        className="block w-full text-center py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-900 font-bold mt-3"
-        disabled={emailLoading}
-      >
-        {emailLoading ? "寄送中..." : "寄送推薦統計"}
-      </button>
     </div>
   );
 }
