@@ -23,16 +23,18 @@ type Card = {
   tag2?: string;
   tag3?: string;
   tag4?: string;
+  views?: number;
 };
 
 export default function CardPage({ url_slug }: { url_slug: string }) {
-  // 強制 decode slug，讓 supabase 查询条件与数据库字段原始一致
   const decodedSlug = decodeURIComponent(url_slug);
-
-  console.log("CardPage 收到的 url_slug:", url_slug, decodedSlug);
   const [card, setCard] = useState<Card | null>(null);
   const [msg, setMsg] = useState("");
-  const [emailLoading, setEmailLoading] = useState(false);
+
+  // 新增--申請修改驗證流程用 state
+  const [question, setQuestion] = useState<{ field: string, label: string, answer: string } | null>(null);
+  const [userAnswer, setUserAnswer] = useState("");
+  const [loadingEditMail, setLoadingEditMail] = useState(false);
 
   const searchParams = useSearchParams();
   const from = searchParams.get("from");
@@ -60,6 +62,12 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         return;
       }
       setCard(data);
+
+      // 新增 —— 計次
+      await supabase
+        .from("cards")
+        .update({ views: (data.views || 0) + 1 })
+        .eq("id", data.id);
     }
     fetchCard();
   }, [decodedSlug]);
@@ -91,43 +99,46 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
       setTimeout(() => setMsg(""), 3000);
     }
   }
-  async function handleSendStatsEmail() {
-    if (!card?.email || !card?.url_slug) {
-      setMsg("未取得 email，請稍後重試！");
+
+  // 新增--申請修改流程
+  function handleRequestEdit() {
+    if (!card) return;
+    const qa: { field: string, label: string, answer: string }[] = [
+      { field: "name", label: "請輸入本名", answer: card.name ?? "" },
+      { field: "mobile", label: "請輸入手機號碼", answer: card.mobile ?? "" },
+      { field: "company", label: "請輸入公司名稱", answer: card.company ?? "" },
+      { field: "line", label: "請輸入LINE ID", answer: card.line ?? "" },
+      { field: "email", label: "請輸入Email", answer: card.email ?? "" },
+      { field: "citys", label: "請輸入城市/縣市", answer: card.citys ?? "" }
+    ].filter(q => q.answer);
+    if (qa.length === 0) {
+      setMsg("沒有足夠的驗證資料欄位");
       return;
     }
-    setEmailLoading(true);
+    const randIdx = Math.floor(Math.random() * qa.length);
+    const pick = qa[randIdx];
+    setQuestion(pick);
+    setUserAnswer("");
+    setMsg("");
+  }
 
-    const { count } = await supabase
-      .from("referrals")
-      .select("*", { count: "exact", head: true })
-      .eq("referrer_slug", card.url_slug)
-      .eq("status", "completed");
-    const drawCount = count || 0;
-    const res = await fetch("/api/sendMail", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        to: card.email,
-        subject: "SHOWALL抽獎機會統計",
-        html: `
-      <div style="font-family: Arial;line-height:1.7;">
-        <h2 style="color:#2563eb;">您的推薦抽獎機會統計</h2>
-        <p>您目前已累積 <b style="color:#1868ca;font-size:20px;">${drawCount}</b> 次抽獎機會。每多推薦1人成功註冊，即多1次抽獎資格！</p>
-        <ul style="margin:20px 0 14px 15px;color:#174179;">
-          <li>請持續邀請朋友註冊、刊登名片，衝高抽獎次數！</li>
-        </ul>
-        <div style="margin-top:20px;color:#666;font-size:13px;">
-          本信件由系統產生，如非本人請忽略。
-        </div>
-      </div>
-    `,
-      }),
-    });
-
-    setEmailLoading(false);
-    setMsg("已寄送專屬統計/申請連結至您的 Email，請查收！");
-    setTimeout(() => setMsg(""), 4000);
+  async function handleCheckAnswer(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!card || !question) return;
+    if (userAnswer.trim() === question.answer) {
+      setLoadingEditMail(true);
+      setMsg("驗證成功！已寄送修改連結至信箱，請查收");
+      await fetch("/api/sendEditMail", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to: card.email, slug: card.url_slug }),
+      });
+      setLoadingEditMail(false);
+      setQuestion(null);
+      setUserAnswer("");
+    } else {
+      setMsg("答案錯誤，請確認再試！");
+    }
   }
 
   if (msg && !card)
@@ -213,6 +224,12 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
             </div>
           )}
         </div>
+
+        {/* 新增瀏覽次數顯示 */}
+        <div className="text-xs text-gray-400 mb-2">
+          👁️ 瀏覽次數：{card.views ?? 0}
+        </div>
+
         {/* 關鍵字標籤 */}
         {(card.tag1 || card.tag2 || card.tag3 || card.tag4) && (
           <div className="mb-6">
@@ -241,7 +258,7 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
           </div>
         )}
       </div>
-      {/* 推薦邀請區塊 */}
+      {/* 推薦邀請區塊（原區塊不動） */}
       <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-5 mt-6 w-full max-w-md">
         <h3 className="font-bold text-blue-900 text-lg mb-2">💰 邀請朋友上傳名片</h3>
         <p className="text-gray-700 text-sm mb-4">
@@ -284,26 +301,37 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
         </div>
       </div>
 
-      {msg && (
-        <div className="mt-2 text-center font-bold text-purple-700 bg-purple-50 px-2 py-2 rounded">
-          {msg}
-        </div>
-      )}
+      {/* 修改申請流程（新增區塊，mail驗證） */}
+      <div className="mt-8 w-full max-w-md">
+        {!question ? (
+          <button
+            className="block w-full bg-purple-700 hover:bg-purple-900 text-white font-bold rounded-lg py-3 text-lg transition"
+            onClick={handleRequestEdit}
+          >
+            申請資料修改
+          </button>
+        ) : (
+          <form onSubmit={handleCheckAnswer} className="bg-white shadow p-4 rounded-lg mt-4">
+            <div className="mb-2 text-gray-700 font-bold">{question.label}</div>
+            <input
+              value={userAnswer}
+              onChange={e => setUserAnswer(e.target.value)}
+              className="border p-2 rounded w-full mb-3"
+              autoFocus
+            />
+            <button type="submit" className="bg-blue-600 text-white font-bold rounded px-4 py-2" disabled={loadingEditMail}>
+              {loadingEditMail ? "寄送中..." : "送出驗證"}
+            </button>
+          </form>
+        )}
+        {msg && <div className="mt-2 font-bold text-green-700 bg-green-50 px-3 py-2 rounded">{msg}</div>}
+      </div>
       {/* 返回上一頁 */}
       <button
         onClick={() => router.back()}
         className="mt-8 text-white hover:underline font-medium"
       >
         ⬅️ 返回上一頁
-      </button>
-
-      {/* Email 統計按鈕 */}
-      <button
-        onClick={handleSendStatsEmail}
-        className="block w-full text-center py-3 bg-purple-700 text-white rounded-lg hover:bg-purple-900 font-bold mt-3"
-        disabled={emailLoading}
-      >
-        {emailLoading ? "寄送中..." : "寄送推薦統計"}
       </button>
     </div>
   );
