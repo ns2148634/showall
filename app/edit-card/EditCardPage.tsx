@@ -7,7 +7,7 @@ import AreaSelector from "@/components/AreaSelector";
 export default function EditCardPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [form, setForm] = useState<any>(null); // null 待載入
+  const [form, setForm] = useState<any>(null);
   const [tokenValid, setTokenValid] = useState(false);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,6 @@ export default function EditCardPage() {
   useEffect(() => {
     if (!token) return setMsg("缺少驗證連結");
     async function fetchData() {
-      // 查 token
       const { data: tokens, error: err1 } = await supabase
         .from("edit_tokens")
         .select("*")
@@ -33,7 +32,6 @@ export default function EditCardPage() {
         setMsg("連結已過期，請重新申請");
         return;
       }
-      // 查名片
       const { data: cardData, error: err2 } = await supabase
         .from("cards")
         .select("*")
@@ -65,7 +63,6 @@ export default function EditCardPage() {
       const { data: ds } = await supabase.from('cities').select('district').eq('citys', form.citys);
       const uniqueAreas = Array.from(new Set(ds?.map(a => a.district).filter(Boolean))).sort();
       setAreas(["全部", ...uniqueAreas]);
-      // 保持原有選擇
       setForm((f: any) => ({ ...f, area: uniqueAreas.includes(f.area) ? f.area : "全部" }));
     }
     if (form?.citys) fetchAreas();
@@ -77,13 +74,11 @@ export default function EditCardPage() {
     if (!form.name) { setMsg("請填姓名"); return; }
     setLoading(true);
 
-    // 儲存名片
     const { error } = await supabase
       .from("cards")
       .update(form)
       .eq("url_slug", form.url_slug);
 
-    // 失效 token
     await supabase
       .from("edit_tokens")
       .update({ used: true })
@@ -98,6 +93,24 @@ export default function EditCardPage() {
     }
   }
 
+  // 刪除（下架）名片
+  async function handleDelete() {
+    if (!form?.url_slug) return setMsg("無效名片，無法刪除！");
+    if (!confirm("確定要下架並刪除此名片？此操作不可復原！")) return;
+    setLoading(true);
+    const { error } = await supabase
+      .from("cards")
+      .delete()
+      .eq("url_slug", form.url_slug);
+    setLoading(false);
+    if (error) {
+      setMsg("下架失敗：" + error.message);
+    } else {
+      setMsg("已成功下架，名片資料已刪除。");
+      setTimeout(() => router.push("/"), 1800); // 可跳回首頁或列表頁
+    }
+  }
+
   if (!tokenValid)
     return <div className="min-h-screen flex items-center justify-center"><div className="text-center text-red-500 font-bold">{msg || "資料載入中..."}</div></div>;
 
@@ -106,6 +119,7 @@ export default function EditCardPage() {
       <main className="max-w-lg mx-auto py-10 w-full">
         <h2 className="text-xl font-bold text-blue-700 mb-6 text-center">名片資料修改</h2>
         <form className="space-y-4 bg-white p-6 rounded-lg shadow" onSubmit={e => { e.preventDefault(); handleSave(); }}>
+          {/* 基本資料欄位 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">電子信箱 <span className="text-red-500">*</span></label>
             <input type="email" className="border p-2 rounded w-full" required value={form.email}
@@ -116,7 +130,6 @@ export default function EditCardPage() {
             <input type="text" className="border p-2 rounded w-full" value={form.name}
               onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))} maxLength={30} />
           </div>
-          {/* 公司、LINE、手機、其他聯絡 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">公司 / 組織</label>
             <input type="text" className="border p-2 rounded w-full" value={form.company ?? ""}
@@ -137,7 +150,7 @@ export default function EditCardPage() {
             <input type="text" className="border p-2 rounded w-full" value={form.contact_other ?? ""}
               onChange={e => setForm((f: any) => ({ ...f, contact_other: e.target.value }))} maxLength={60} />
           </div>
-          {/* 地區 */}
+          {/* 地區選擇 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">所在地區</label>
             <AreaSelector
@@ -169,12 +182,25 @@ export default function EditCardPage() {
           >
             {loading ? "儲存中..." : "送出修改"}
           </button>
+          {/* 提示＆訊息 */}
+          <div className="mt-4 text-yellow-700 font-bold text-center">
+            若需要重新上傳名片正面或背面，請重新使用上傳功能(重新上架)。
+          </div>
           {msg && (
             <div className="mt-3 text-center font-bold text-green-600">
               {msg}
             </div>
           )}
         </form>
+        {/* 下架刪除按鈕 */}
+        <button
+          type="button"
+          className="w-full py-3 mt-4 rounded bg-red-600 text-white text-lg font-bold hover:bg-red-700 transition"
+          onClick={handleDelete}
+          disabled={loading}
+        >
+          {loading ? "下架中..." : "下架（刪除名片）"}
+        </button>
       </main>
       <footer className="text-center text-gray-400 text-sm py-6 border-t mt-8">
         &copy; 2025 SHOWALL 名片+
