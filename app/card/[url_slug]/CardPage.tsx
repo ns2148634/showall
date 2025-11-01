@@ -225,11 +225,6 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
           )}
         </div>
 
-        {/* 新增瀏覽次數顯示 */}
-        <div className="text-xs text-gray-400 mb-2">
-          👁️ 瀏覽次數：{card.views ?? 0}
-        </div>
-
         {/* 關鍵字標籤 */}
         {(card.tag1 || card.tag2 || card.tag3 || card.tag4) && (
           <div className="mb-6">
@@ -298,6 +293,11 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
           <div className="text-xs text-gray-500 mt-1 text-center">
             直接掃碼即連到「推薦上傳」頁，或手機長按儲存分享給朋友
           </div>
+          {/* 新增瀏覽次數顯示 */}
+          <div className="text-xs text-gray-400 mb-2">
+            瀏覽次數：{card.views ?? 0}
+          </div>
+
         </div>
       </div>
 
