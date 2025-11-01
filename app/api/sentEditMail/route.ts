@@ -1,25 +1,22 @@
-// pages/api/sendEditMail.ts
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest } from 'next/server';
 import { createClient } from "@supabase/supabase-js";
 import { nanoid } from "nanoid";
 import nodemailer from "nodemailer";
 
-// 你的 Supabase 連線 config
 const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_KEY!);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).end();
+export async function POST(req: NextRequest) {
+  const { to, slug } = await req.json();
+  if (!to || !slug) {
+    return new Response(JSON.stringify({ error: "缺少 email 或 slug" }), { status: 400 });
+  }
 
-  const { to, slug } = req.body;
-  if (!to || !slug) return res.status(400).json({ error: "缺少 email 或 slug" });
-
-  // 1. 產生唯一 token
+  // 產生 token
   const token = nanoid(32);
   const now = new Date();
-  const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24H
+  const expires = new Date(now.getTime() + 24 * 60 * 60 * 1000);
   const expires_at = expires.toISOString();
 
-  // 2. 保存在 edit_tokens 表
   await supabase.from("edit_tokens").insert([{
     token,
     card_slug: slug,
@@ -29,10 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     expires_at
   }]);
 
-  // 3. 修改連結
   const link = `${process.env.NEXT_PUBLIC_BASE_URL}/edit-card?token=${token}`;
-
-  // 4. 寄信
   const transporter = nodemailer.createTransport({
     service: "Gmail",
     auth: {
@@ -56,5 +50,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     `
   });
 
-  return res.status(200).json({ success: true });
+  return new Response(JSON.stringify({ success: true }), { status: 200 });
 }

@@ -28,11 +28,11 @@ export default function SideFabContact() {
           minWidth: 40,
           boxShadow: "0 2px 8px rgba(39,102,173,0.14), 0 8px 24px 2px rgba(0,0,0,.16)"
         }}
-        aria-label="名片定制與客服聯絡"
-        title="名片定制與客服聯絡"
+        aria-label="名片定制&聯絡我們"
+        title="名片定制&聯絡我們"
         type="button"
       >
-        名片定制與客服聯絡
+        名片定制&聯絡我們
       </button>
 
       {/* 彈出modal */}

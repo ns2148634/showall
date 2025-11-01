@@ -104,12 +104,12 @@ export default function CardPage({ url_slug }: { url_slug: string }) {
   function handleRequestEdit() {
     if (!card) return;
     const qa: { field: string, label: string, answer: string }[] = [
-      { field: "name", label: "請輸入本名", answer: card.name ?? "" },
+      { field: "name", label: "請輸入姓名", answer: card.name ?? "" },
       { field: "mobile", label: "請輸入手機號碼", answer: card.mobile ?? "" },
-      { field: "company", label: "請輸入公司名稱", answer: card.company ?? "" },
+      { field: "company", label: "請輸入公司/組織名稱", answer: card.company ?? "" },
       { field: "line", label: "請輸入LINE ID", answer: card.line ?? "" },
       { field: "email", label: "請輸入Email", answer: card.email ?? "" },
-      { field: "citys", label: "請輸入城市/縣市", answer: card.citys ?? "" }
+      { field: "citys", label: "請輸入所在城市", answer: card.citys ?? "" }
     ].filter(q => q.answer);
     if (qa.length === 0) {
       setMsg("沒有足夠的驗證資料欄位");
