@@ -7,17 +7,17 @@ import AreaSelector from "@/components/AreaSelector";
 export default function EditCardPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [form, setForm] = useState<any>(null); // 初始化 null，載入資料後填入
+  const [form, setForm] = useState<any>(null); // null 待載入
   const [tokenValid, setTokenValid] = useState(false);
   const [msg, setMsg] = useState("");
   const [loading, setLoading] = useState(false);
-  const token = searchParams.get("token");
 
-  // 地區下拉
+  // 城市/地區下拉
   const [cities, setCities] = useState<string[]>([]);
   const [areas, setAreas] = useState<string[]>([]);
+  const token = searchParams.get("token");
 
-  // 驗證 token 並取資料
+  // 載入 token 與卡片資料
   useEffect(() => {
     if (!token) return setMsg("缺少驗證連結");
     async function fetchData() {
@@ -33,7 +33,7 @@ export default function EditCardPage() {
         setMsg("連結已過期，請重新申請");
         return;
       }
-      // 查卡片原資料
+      // 查名片
       const { data: cardData, error: err2 } = await supabase
         .from("cards")
         .select("*")
@@ -46,7 +46,6 @@ export default function EditCardPage() {
     fetchData();
   }, [token]);
 
-  // 城市地區載入，下拉選單
   useEffect(() => {
     async function fetchCities() {
       const { data: cityObjs } = await supabase.from('cities').select('citys');
@@ -55,6 +54,7 @@ export default function EditCardPage() {
     }
     fetchCities();
   }, []);
+
   useEffect(() => {
     async function fetchAreas() {
       if (!form?.citys || form.citys === "全部") {
@@ -65,17 +65,18 @@ export default function EditCardPage() {
       const { data: ds } = await supabase.from('cities').select('district').eq('citys', form.citys);
       const uniqueAreas = Array.from(new Set(ds?.map(a => a.district).filter(Boolean))).sort();
       setAreas(["全部", ...uniqueAreas]);
-      setForm((f: any) => ({ ...f, area: "全部" }));
+      // 保持原有選擇
+      setForm((f: any) => ({ ...f, area: uniqueAreas.includes(f.area) ? f.area : "全部" }));
     }
     if (form?.citys) fetchAreas();
     // eslint-disable-next-line
   }, [form?.citys]);
 
-  // 處理儲存（update）
   async function handleSave() {
     if (!form.email) { setMsg("請填寫電子信箱"); return; }
     if (!form.name) { setMsg("請填姓名"); return; }
     setLoading(true);
+
     // 儲存名片
     const { error } = await supabase
       .from("cards")
@@ -97,10 +98,9 @@ export default function EditCardPage() {
     }
   }
 
-  // 尚未取得資料、失效、或已成功
-  if (!tokenValid) return <div className="min-h-screen flex items-center justify-center"><div className="text-center text-red-500 font-bold">{msg || "資料載入中..."}</div></div>;
+  if (!tokenValid)
+    return <div className="min-h-screen flex items-center justify-center"><div className="text-center text-red-500 font-bold">{msg || "資料載入中..."}</div></div>;
 
-  // 編輯表單（與 upload 欄位一致）
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center">
       <main className="max-w-lg mx-auto py-10 w-full">
@@ -116,7 +116,7 @@ export default function EditCardPage() {
             <input type="text" className="border p-2 rounded w-full" value={form.name}
               onChange={e => setForm((f: any) => ({ ...f, name: e.target.value }))} maxLength={30} />
           </div>
-          {/* 以下欄位照 upload page 做 */}
+          {/* 公司、LINE、手機、其他聯絡 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">公司 / 組織</label>
             <input type="text" className="border p-2 rounded w-full" value={form.company ?? ""}
@@ -137,6 +137,7 @@ export default function EditCardPage() {
             <input type="text" className="border p-2 rounded w-full" value={form.contact_other ?? ""}
               onChange={e => setForm((f: any) => ({ ...f, contact_other: e.target.value }))} maxLength={60} />
           </div>
+          {/* 地區 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">所在地區</label>
             <AreaSelector
@@ -148,15 +149,14 @@ export default function EditCardPage() {
               setSelectedArea={val => setForm((f: any) => ({ ...f, area: val }))}
             />
           </div>
-          {/* tag1～tag4（經營項目） */}
-          {["tag1", "tag2", "tag3", "tag4"].map((t,i) => (
+          {/* 經營項目 */}
+          {["tag1", "tag2", "tag3", "tag4"].map((t, i) => (
             <div key={t}>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{`經營項目 ${i+1}`}</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{`經營項目 ${i + 1}`}</label>
               <input type="text" className="border p-2 rounded w-full" value={form[t] ?? ""}
                 onChange={e => setForm((f: any) => ({ ...f, [t]: e.target.value }))} maxLength={30} />
             </div>
           ))}
-          {/* 簡介 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">簡介 / 服務特色</label>
             <textarea className="border p-2 rounded w-full" rows={4} value={form.intro ?? ""}
